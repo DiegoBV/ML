@@ -18,6 +18,9 @@ def load_csv(file_name):
 def h(x, _theta):
     return (_theta[0] + x*_theta[1])
 
+def J(_cases, _theta):
+    m = len(_cases)
+    return 1/(2*m) * np.sum((h(_cases[:, 0], _theta) - _cases[:, 1])**2)
 
 def minimize(_cases, _theta):
     """
@@ -43,8 +46,8 @@ def gradient_descent_loop():
 
     for i in range(M):
         minimize(cases, theta)
+        print(J(cases, theta))
     
-    print(theta)
     pinta_todo(cases, theta)
 
 gradient_descent_loop()
