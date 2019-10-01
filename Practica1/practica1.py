@@ -52,7 +52,7 @@ data = load_csv("ex1data1.csv")
 X = data[:, :-1] #every col but the last
 m = np.shape(X)[0] #number of training examples
 Y = data[:, -1] #the last col, every row
-Y = np.reshape(Y, (m, 1))
+Y = np.reshape(Y, (m, 1)) #dont know why this is needed, but it is
 plt.scatter(X, Y, 1, "red")
 X = np.hstack([np.ones([m, 1]), X]) 
 
