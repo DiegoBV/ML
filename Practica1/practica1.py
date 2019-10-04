@@ -4,9 +4,9 @@ from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
 from matplotlib.ticker import LinearLocator, FormatStrFormatter
+import sys
 
 learning_rate = 0.01
-M = 1500
 
 def load_csv(file_name):
     """
@@ -42,9 +42,7 @@ def minimize(X, Y, m, n, _theta):
     _theta[0, 0] = temp0
     _theta[0, 1] = temp1"""
 
-
-
-def calcula_coste_paraPintar(X, Y):
+def make_paint_data(X, Y):
     step= 0.1
     Theta0 = np.arange(-10, 10, step)
     Theta1 = np.arange(-1, 4, step)
@@ -55,11 +53,14 @@ def calcula_coste_paraPintar(X, Y):
 
     for ix, iy in np.ndindex(Theta0.shape):
         coste[ix, iy] = J(X, Y, [Theta0[ix, iy], Theta1[ix, iy]])
-    
-    #pinta_coste_3D(Theta0, Theta1, coste)
+
     return Theta0, Theta1, coste
 
 def normalize(X, n):
+    """
+    normalize the matrix given using the mean and deviation of every column (attribute)
+    returns the normalized matrix, the mu vector (mean of every attribute) and sigma vector (deviation of every attribute)
+    """
     X_norm = np.empty_like(X)
     sigma = np.empty(n + 1)
     mu = np.empty(n + 1)
@@ -75,13 +76,13 @@ def normalize(X, n):
     return X_norm, mu, sigma
 
 
-def pinta_todo(X, Y, _theta):
+def draw_points_plot(X, Y, _theta):
     plt.figure()
     plt.scatter(X[:, 1], Y, 1, "red")
     plt.plot(X[:, 1:], h(X, _theta), color="grey")
     plt.show()
 
-def pinta_coste_3D(X, Y, Z):
+def draw_cost_3D(X, Y, Z):
     fig = plt.figure()
     ax = fig.gca(projection='3d') 
 
@@ -90,21 +91,32 @@ def pinta_coste_3D(X, Y, Z):
     fig.colorbar(surf, shrink =0.5, aspect=5)
     plt.show()
 
-def pinta_contorno(X, Y, Z):
+def draw_contour(X, Y, Z):
     plt.figure()
     plt.contour(X, Y, Z)
+    plt.show()
+
+def draw_cost(cost):
+    plt.figure()
+    X = np.linspace(0, 400, len(cost))
+    plt.plot(X, cost)
     plt.show()
     
 def gradient_descent_loop(X, Y, m, n):
     theta = np.zeros([1, n + 1], dtype=float)
     cost = np.array([], dtype=float)
-    for i in range(M): #CHANGE THIS TO CONVERGENCE VALUE 10^-3
+    auxCost = sys.maxsize
+    while True:
         minimize(X, Y, m, n, theta)
-        np.append(cost, J(X, Y, theta))
+        cost = np.append(cost, J(X, Y, theta))
+        if abs(auxCost - cost[-1]) < 1e-4:
+            #Stops the loop when we reach the convergence value of 10^-4
+            break
+        auxCost = cost[-1]
     
     return theta, cost
 
-data = load_csv("ex1data1.csv")
+data = load_csv("ex1data2.csv")
 X = data[:, :-1] #every col but the last
 m = np.shape(X)[0] #number of training examples
 n = np.shape(X)[1]
@@ -112,10 +124,12 @@ Y = data[:, -1] #the last col, every row
 Y = np.reshape(Y, (m, 1)) #dont know why this is needed, but it is
 X = np.hstack([np.ones([m, 1]), X])
 
-#X_norm, mu, sigma = normalize(X, n)
-theta, cost = gradient_descent_loop(X, Y, m, n)
+X_norm, mu, sigma = normalize(X, n)
+theta, cost = gradient_descent_loop(X_norm, Y, m, n)
+draw_cost(cost)
 
-pinta_todo(X, Y, theta)
-A, B, Z = calcula_coste_paraPintar(X, Y)
-pinta_coste_3D(A, B, Z)
-pinta_contorno(A, B, Z)
+if n == 1: #provisional
+    draw_points_plot(X_norm, Y, theta)
+    A, B, Z = make_paint_data(X, Y)
+    draw_cost_3D(A, B, Z)
+    draw_contour(A, B, Z)
