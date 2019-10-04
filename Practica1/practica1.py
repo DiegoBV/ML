@@ -120,7 +120,7 @@ def gradient_descent_loop(X, Y, m, n):
     
     return theta, cost
 
-data = load_csv("ex1data2.csv")
+data = load_csv("ex1data1.csv")
 X = data[:, :-1] #every col but the last
 m = np.shape(X)[0] #number of training examples
 n = np.shape(X)[1]
