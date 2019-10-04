@@ -75,6 +75,10 @@ def normalize(X, n):
     #sigma & mu???"""
     return X_norm, mu, sigma
 
+def normalize_user_values(user_values, mu, sigma):
+    new_data = (user_values - mu[1:])/sigma[1:]
+    new_data = np.hstack([[1], new_data])
+    return new_data
 
 def draw_points_plot(X, Y, _theta):
     plt.figure()
@@ -133,3 +137,8 @@ if n == 1: #provisional
     A, B, Z = make_paint_data(X, Y)
     draw_cost_3D(A, B, Z)
     draw_contour(A, B, Z)
+
+print("Values of theta: " + str(theta))
+user_values = np.array(list(map(float, input("Enter query values: ").split())), dtype=float)
+user_values = normalize_user_values(user_values, mu, sigma)
+print("Your prediction: " + str(int(h(user_values, theta))))
