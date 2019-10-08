@@ -1,5 +1,5 @@
-from UtilsModule import Normalization
-from UtilsModule import load_csv
+from ML_UtilsModule import Normalization
+from ML_UtilsModule import Data_Management
 import numpy as np
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
@@ -29,9 +29,8 @@ def minimize(X, Y, m, n, _theta):
     H = h(X, _theta)
     for i in range(n + 1):
         columnX = np.reshape(X[:, i], (m, 1)) #X[:, i] devuleve una fila con los datos de la columna, hay que hacer reshape para que devuelva los datos en filas separadas 
-        aux = np.sum((H - Y) * columnX)
-        temp = _theta[0][i] - learning_rate*(1/m) * aux
-        _theta[0, i] = temp
+        aux = np.sum((H - Y) * columnX) 
+        _theta[0, i] = _theta[0][i] - learning_rate*(1/m) * aux
 
 def make_paint_data(X, Y):
     """
@@ -105,12 +104,8 @@ def gradient_descent_loop(X, Y, m, n):
     
     return theta, cost
 
-data = load_csv(sys.argv[1])
-X = data[:, :-1] #every col but the last
-m = np.shape(X)[0] #number of training examples
-n = np.shape(X)[1]
-Y = data[:, -1] #the last col, every row
-Y = np.reshape(Y, (m, 1)) #dont know why this is needed, but it is
+data = Data_Management.load_csv(sys.argv[1])
+X, Y, m, n = Data_Management.get_parameters_from_training_examples(data)
 
 X_norm, mu, sigma = Normalization.normalize_data_set(X)
 theta, cost = gradient_descent_loop(X_norm, Y, m, n)
@@ -123,7 +118,7 @@ if n == 1: #provisional
     draw_contour(A, B, Z)
 
 #Print theta's values and ask for predictions
-print("Values of theta: " + str(theta))
+print("Values of theta: " + str(theta) + "\n")
 while True:
     user_values = np.array(list(map(float, input("Enter query values: ").split())), dtype=float)
     if user_values.size == 0:

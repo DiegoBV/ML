@@ -1,19 +1,35 @@
 import numpy as np
 from pandas.io.parsers import read_csv
 
-def load_csv(file_name):
-    """
-    Load the csv file. Returns numpy array
-    """
+class Data_Management:
 
-    values = read_csv(file_name, header=None).values
+    @staticmethod
+    def load_csv(file_name):
+        """
+        Load the csv file. Returns numpy array
+        """
+        values = read_csv(file_name, header=None).values
 
-    #always float
-    return values.astype(float)
+        #always float
+        return values.astype(float)
+
+    @staticmethod
+    def get_parameters_from_training_examples(training_examples):
+        """
+        Returns the needed parameters from the training examples, aka X, Y, m, n
+        """
+        X = training_examples[:, :-1] #every col but the last
+        m = np.shape(X)[0] #number of training examples
+        n = np.shape(X)[1] #number of attributes
+        Y = training_examples[:, -1] #the last col, every row
+        Y = np.reshape(Y, (m, 1)) #dont know why this is needed, but it is (needed for numpy operations)
+
+        return X, Y, m, n
+
 
 class Normalization:
     """
-    Simple Normalization
+    Regression Normalization (adding the one columns)
     """
     
     @staticmethod
