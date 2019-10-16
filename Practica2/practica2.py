@@ -52,14 +52,10 @@ def pinta_frontera_recta(X, Y, theta):
 
 data = Data_Management.load_csv("ex2data1.csv") #sys.argv[1])
 X, Y, m, n = Data_Management.get_parameters_from_training_examples(data)
-#X_norm, mu, sigma = Normalization.normalize_data_set(X)
 draw_data(X, Y)
 theta = np.zeros([1, n + 1], dtype=float)
-X = np.hstack([np.ones([np.shape(X)[0], 1]), X]) #convention in linear regr
-#print(J(X_norm, Y, theta, m))
-#print (theta.shape)
-theta = np.ravel(theta)
-#print(gradient(theta, X, Y).shape)
+#theta = np.ravel(theta)
+X = Data_Management.add_column_left_of_matrix(X) #convention in linear regr
 
 theta = tnc(func=J, x0=theta, fprime=gradient, args=(X,Y))[0]
 pinta_frontera_recta(X, Y, theta)
