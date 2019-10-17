@@ -26,11 +26,6 @@ class Data_Management:
 
         return X, Y, m, n
 
-    @staticmethod
-    def add_column_left_of_matrix(matrix):
-        new_matrix = np.hstack([np.ones([np.shape(matrix)[0], 1]), matrix]) #convention in linear regr
-        return new_matrix
-
 
 class Normalization:
     """
@@ -38,9 +33,9 @@ class Normalization:
     """
     
     @staticmethod
-    def normalize_data_matrix(X):
+    def normalize_data_set(X):
         """
-        Normalize the given matrix using the mean and deviation of every column (attribute).
+        Normalize the given matrix (data set) using the mean and deviation of every column (attribute).
         Returns the normalized matrix, the mu vector (mean of every attribute) and sigma vector (deviation of every attribute).
         """
         n = np.shape(X)[1]
@@ -55,6 +50,8 @@ class Normalization:
             new_value = (X[:, i] - mu[i])/sigma[i] #normalize
             X_norm[:, i] = new_value
 
+        X_norm = np.hstack([np.ones([np.shape(X)[0], 1]), X_norm]) #convention in linear regr
+
         return X_norm, mu, sigma
 
     @staticmethod
@@ -64,5 +61,6 @@ class Normalization:
         previous normalization 
         """
         new_data = (attributes - mu[:])/sigma[:] #normalize
+        new_data = np.hstack([[1], new_data]) #convention in linear regr
         return new_data
 
