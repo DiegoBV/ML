@@ -19,15 +19,14 @@ def propagation(X, theta1, theta2):
     
     outputLayer = g(np.dot(hiddenLayer, np.transpose(theta2)))
     
-    print(outputLayer)
     return outputLayer
     
     
 def checkLearned(y, outputLayer):
     
-    maxIndexV = np.argmax(outputLayer, axis = 1)
+    maxIndexV = np.argmax(outputLayer, axis = 1) + 1
     
-    checker = ((y[:,0]%np.shape(outputLayer)[1]) == maxIndexV) 
+    checker = (y[:,0] == maxIndexV) 
     count = np.size(np.where(checker == True)) 
     fin = count/np.shape(y)[0] * 100
     return fin
@@ -43,4 +42,4 @@ X = Data_Management.add_column_left_of_matrix(X) #añadida culumna de 1s
 
 outputLayer = propagation(X, theta1, theta2)
 
-print(checkLearned(y, outputLayer))
+print("Precision de la red neuronal: " + str(checkLearned(y, outputLayer)) + " %")
