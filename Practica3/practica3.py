@@ -21,7 +21,7 @@ def gradient(theta, X, Y):
     theta = np.reshape(theta, (1, n))
     var1 = np.transpose(X)
     var2  = g(np.dot(X, np.transpose(theta)))-Y
-    
+
     theta = np.c_[[0], theta[:, 1:]]
     var3 = (learning_rate/m) * theta
     return ((1/m) * np.dot(var1, var2)) + np.transpose(var3)
@@ -38,12 +38,11 @@ def oneVSAll(X, y, num_etiquetas, reg):
     de regularización ’reg’ y devuelve el resultado en una matriz, donde
     la fila i−ésima corresponde al clasificador de la etiqueta i−ésima
     """
-    clasificadores = np.empty((num_etiquetas, np.shape(X)[1])) 
-    theta = np.random.standard_normal((1, np.shape(X)[1])) #TODO: init with random values
+    clasificadores = np.empty((num_etiquetas, np.shape(X)[1]))
+    theta = np.random.standard_normal((1, np.shape(X)[1]))
 
     mask = np.empty((num_etiquetas, np.shape(y)[0]), dtype=bool)
 
-    #TODO: VECTORIZAR SI SE PUEDE UWU       
     for i in range(num_etiquetas):
         mask[i, :] = (y[:, 0]% num_etiquetas == i)
         clasificadores[i] = tnc(func=J, x0=theta, fprime=gradient, args=(X, np.reshape(mask[i], (np.shape(X)[0], 1))))[0]
@@ -51,13 +50,13 @@ def oneVSAll(X, y, num_etiquetas, reg):
 
 def checkLearned(X, y, clasificadores):
     result = checkNumber(X, clasificadores)
-    
+
     maxIndexV = np.argmax(result, axis = 1);
 
-    checker = ((y[:,0]%np.shape(clasificadores)[0]) == maxIndexV) 
-    count = np.size(np.where(checker == True)) 
+    checker = ((y[:,0]%np.shape(clasificadores)[0]) == maxIndexV)
+    count = np.size(np.where(checker == True))
     fin = count/np.shape(y)[0] * 100
-    
+
     return fin
 
 def checkNumber(X, clasificadores):
@@ -69,7 +68,7 @@ def checkNumber(X, clasificadores):
 X, y = Data_Management.load_mat("ex3data1.mat")
 clasificadores = oneVSAll(X, y, 10, 2)
 
-print (str (checkLearned(X, y, clasificadores)) + " %")
+print ("Precision: " + str(checkLearned(X, y, clasificadores)) + " %")
 
 Data_Management.draw_random_examples(X)
 plt.show()

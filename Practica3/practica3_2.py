@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from ML_UtilsModule import Data_Management
 from scipy.io import loadmat
 from scipy.optimize import fmin_tnc as tnc
