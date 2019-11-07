@@ -65,6 +65,10 @@ def checkNNGradients(costNN, reg_param):
     # Set each element of y to be in [0,num_labels]
     y = [(i % num_labels) for i in range(m)]
 
+    ys = np.zeros((m, num_labels))
+    for i in range(m):
+        ys[i, y[i]] = 1
+
     # Unroll parameters
     nn_params = np.append(Theta1, Theta2).reshape(-1)
 
@@ -73,12 +77,12 @@ def checkNNGradients(costNN, reg_param):
                         input_layer_size,
                         hidden_layer_size,
                         num_labels,
-                        X, y, reg_param)
+                        X, ys, reg_param)
 
     def reduced_cost_func(p):
         """ Cheaply decorated nnCostFunction """
         return costNN(p, input_layer_size, hidden_layer_size, num_labels,
-                      X, y, reg_param)[0]
+                      X, ys, reg_param)[0]
 
     numgrad = computeNumericalGradient(reduced_cost_func, nn_params)
 
