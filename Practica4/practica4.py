@@ -70,13 +70,13 @@ def backdrop(params_rn, num_entradas, num_ocultas, num_etiquetas, X, y, reg):
     delta_matrix_1 = np.zeros(np.shape(theta1))
     delta_matrix_2 = np.zeros(np.shape(theta2))
     for i in range(np.shape(X)[0]):
-        delta3 = a3[i] - y[i]
-        aux1 = np.dot(np.transpose(theta2), delta3[:, np.newaxis]) 
-        aux2 = derivada_de_G(np.dot(theta1, a1[i][:, np.newaxis]))
-        delta2 = aux1 * aux2
-        delta_2 = np.delete(delta_2, [0], axis=1)
-        delta_matrix_1 = delta_matrix_1 + np.dot(delta2, np.transpose(a1[i]))
-        delta_matrix_2 = delta_matrix_2 + np.dot(delta3, np.transpose(a2[i]))
+        delta3 = a3[i] - y[i] #(3, )
+        aux1 = np.dot(np.transpose(theta2), delta3[:, np.newaxis]) #(6, 1)
+        aux2 = derivada_de_G(np.dot(theta1, a1[i][:, np.newaxis])) #(5, 1)
+        aux1 = np.delete(aux1, [0], axis=0) #(5, 1) linea de la cual no estamos nada seguros ??
+        delta2 = aux1 * aux2 #(5, 1)
+        delta_matrix_1 = delta_matrix_1 + np.dot(delta2, np.transpose(a1[i][:, np.newaxis])) #(5, 4)
+        delta_matrix_2 = delta_matrix_2 + np.dot(delta3[:, np.newaxis], np.transpose(a2[i][:, np.newaxis])) #(3, 6)
 
     #--------------------PASO3---------------------------------------
     # aux1 = np.dot(delta_3, theta2) #(5000, 26)
@@ -110,11 +110,6 @@ X, y = Data_Management.load_mat("ex4data1.mat")
 
 weights = loadmat('ex4weights.mat')
 theta1, theta2 = weights['Theta1'], weights['Theta2']
-
-a1, a2, a3 = propagation(X, theta1, theta2)
-print(a3.shape)
-print(y.shape)
-y_transformed = transform_y(y, 10)
 
 theta_vector = np.concatenate((np.ravel(theta1), np.ravel(theta2)))
 #backdrop(theta_vector, np.shape(X)[1], 25, 10, X, y, learning_rate)
