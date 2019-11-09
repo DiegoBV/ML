@@ -69,16 +69,42 @@ def backdrop(params_rn, num_entradas, num_ocultas, num_etiquetas, X, y, reg):
     #delta_3 = a3 - y # (5000, 10)
     delta_matrix_1 = np.zeros(np.shape(theta1))
     delta_matrix_2 = np.zeros(np.shape(theta2))
+    X = Data_Management.add_column_left_of_matrix(X)
+
     for i in range(np.shape(X)[0]):
-        delta3 = a3[i] - y[i] #(3, )
-        aux1 = np.dot(np.transpose(theta2), delta3[:, np.newaxis]) #(6, 1)
-        aux2 = derivada_de_G(np.dot(theta1, a1[i][:, np.newaxis])) #(5, 1)
-        aux1 = np.delete(aux1, [0], axis=0) #(5, 1) linea de la cual no estamos nada seguros ??
-        delta2 = aux1 * aux2 #(5, 1)
-        delta_matrix_1 = delta_matrix_1 + np.dot(delta2, np.transpose(a1[i][:, np.newaxis])) #(5, 4)
-        delta_matrix_2 = delta_matrix_2 + np.dot(delta3[:, np.newaxis], np.transpose(a2[i][:, np.newaxis])) #(3, 6)
+        #-----------Propagation--------------------
+        a1 = X[i]
+        a1 = np.reshape(a1, (np.shape(a1)[0], 1))
+        z2 = np.dot(theta1, a1)
+        a2 = g(z2)
+        a2 = Data_Management.add_column_top_of_matrix(a2)
+        z3 = np.dot(theta2, a2)
+        a3 = g(z3)
+
+        #-----------Backward--------------------
+        delta3 = a3 - y[i][:, np.newaxis]
+        aux1 = np.dot(np.transpose(theta2), delta3) #(6, 1)
+        aux2 = a2 * (1 - a2)
+        delta2 = aux1 * aux2
+        çdelta2 = np.delete(delta2, [0], axis=0)
+        delta_matrix_1 = delta_matrix_1 + np.dot(delta2, np.transpose(a1)) #(5, 4)
+        delta_matrix_2 = delta_matrix_2 + np.dot(delta3, np.transpose(a2)) #(3, 6)
 
     #--------------------PASO3---------------------------------------
+
+    # for t in range(np.shape(X)[0]):
+    #     a1t = a1[t, :]  # (1, 401)
+    #     a2t = a2[t, :]  # (1, 26)
+    #     ht = a3[t, :]  # (1, 10)
+    #     yt = y[t]  # (1, 10)
+
+    #     d3t = ht - yt  # (1, 10)
+    #     d2t = np.dot(theta2.T, d3t) * (a2t * (1 - a2t))  # (1, 26)
+
+    #     delta1 = delta1 + np.dot(d2t[1:, np.newaxis], a1t[np.newaxis, :])
+    #     delta2 = delta2 + np.dot(d3t[:, np.newaxis], a2t[np.newaxis, :])
+
+
     # aux1 = np.dot(delta_3, theta2) #(5000, 26)
     # aux2 = Data_Management.add_column_left_of_matrix(derivada_de_G(np.dot(a1, np.transpose(theta1))))
     # delta_2 = aux1 * aux2 #(5000, 26)
@@ -96,7 +122,7 @@ def backdrop(params_rn, num_entradas, num_ocultas, num_etiquetas, X, y, reg):
     # delta_matrix_2 = delta_matrix_2/np.shape(X)[0]
 
     # #--------------------PASO6---------------------------------------
-    cost  = J(X, y, a3, num_etiquetas, theta1, theta2)
+    cost = J(X, y, a3.T, num_etiquetas, theta1, theta2)
     gradient = np.concatenate((np.ravel(delta_matrix_1), np.ravel(delta_matrix_2)))
 
     return cost, gradient
@@ -110,10 +136,11 @@ X, y = Data_Management.load_mat("ex4data1.mat")
 
 weights = loadmat('ex4weights.mat')
 theta1, theta2 = weights['Theta1'], weights['Theta2']
+#a1, a2, a3 = propagation(X, theta1, theta2)
 
 theta_vector = np.concatenate((np.ravel(theta1), np.ravel(theta2)))
 #backdrop(theta_vector, np.shape(X)[1], 25, 10, X, y, learning_rate)
 print(check.checkNNGradients(backdrop, 1e-4))
-#rint(J(X, y_transformed, a3, 10, theta1, theta2))
+#print(J(X, transform_y(y, 10), a3, 10, theta1, theta2))
 
 #print(pesos_aleat(5, 6))
