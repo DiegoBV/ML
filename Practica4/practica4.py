@@ -61,9 +61,8 @@ def backdrop(params_rn, num_entradas, num_ocultas, num_etiquetas, X, y, reg):
     theta2 = np.reshape(params_rn[num_ocultas*(num_entradas + 1):], 
         (num_etiquetas, (num_ocultas + 1)))
 
-    y = transform_y(y, num_etiquetas)
     #--------------------PASO1---------------------------------------
-    a1, a2, a3 = propagation(X, theta1, theta2)
+    a11, a22, a33 = propagation(X, theta1, theta2)
 
     #--------------------PASO2---------------------------------------
     #delta_3 = a3 - y # (5000, 10)
@@ -86,7 +85,7 @@ def backdrop(params_rn, num_entradas, num_ocultas, num_etiquetas, X, y, reg):
         aux1 = np.dot(np.transpose(theta2), delta3) #(6, 1)
         aux2 = a2 * (1 - a2)
         delta2 = aux1 * aux2
-        çdelta2 = np.delete(delta2, [0], axis=0)
+        delta2 = np.delete(delta2, [0], axis=0)
         delta_matrix_1 = delta_matrix_1 + np.dot(delta2, np.transpose(a1)) #(5, 4)
         delta_matrix_2 = delta_matrix_2 + np.dot(delta3, np.transpose(a2)) #(3, 6)
 
@@ -122,7 +121,7 @@ def backdrop(params_rn, num_entradas, num_ocultas, num_etiquetas, X, y, reg):
     # delta_matrix_2 = delta_matrix_2/np.shape(X)[0]
 
     # #--------------------PASO6---------------------------------------
-    cost = J(X, y, a3.T, num_etiquetas, theta1, theta2)
+    cost = J(X, y, a33, num_etiquetas, theta1, theta2)
     gradient = np.concatenate((np.ravel(delta_matrix_1), np.ravel(delta_matrix_2)))
 
     return cost, gradient
