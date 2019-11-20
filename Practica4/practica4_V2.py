@@ -50,6 +50,15 @@ def forward_propagate(X, theta1, theta2):
     h = g(z3)
     return a1, z2, a2, z3, h
 
+def propagation(a1, theta1, theta2):
+    a1 = Data_Management.add_column_left_of_matrix(a1)
+    a2 = g(np.dot(a1, np.transpose(theta1)))      
+    a2 = Data_Management.add_column_left_of_matrix(a2)
+    
+    a3 = g(np.dot(a2, np.transpose(theta2)))
+    
+    return a1, a2, a3
+
 def backdrop(params_rn, num_entradas, num_ocultas, num_etiquetas, X, y, reg):
     """
     return coste y gradiente de una red neuronal de dos capas
@@ -61,32 +70,33 @@ def backdrop(params_rn, num_entradas, num_ocultas, num_etiquetas, X, y, reg):
 
     #--------------------PASO1---------------------------------------
    
-    m = X.shape[0]
-    a1, z2, a2, z3, h = forward_propagate(X, theta1, theta2)
+    a1, a2, a3 = propagation(X, theta1, theta2)
+    m = np.shape(X)[0]
+    delta_3 = a3 - y # (5000, 10)
+    #--------------------PASO2---------------------------------------
+    #delta_3 = a3 - y # (5000, 10)
+    delta_matrix_1 = np.zeros(np.shape(theta1))
+    delta_matrix_2 = np.zeros(np.shape(theta2))
     
-    delta1 = np.zeros(np.shape(theta1))
-    delta2 = np.zeros(np.shape(theta2))
+    aux1 = np.dot(delta_3, theta2) #(5000, 26)
+    aux2 = Data_Management.add_column_left_of_matrix(derivada_de_G(np.dot(a1, np.transpose(theta1))))
+    delta_2 = aux1 * aux2 #(5000, 26)
+    delta_2 = np.delete(delta_2, [0], axis=1) #(5000, 25)
 
-    for t in range(m):
-        a1t = a1[t, :] # (1, 401)
-        a2t = a2[t, :] # (1, 26)
-        ht = h[t, :] # (1, 10)
-        yt = y[t] # (1, 10)
-        d3t = ht - yt # (1, 10)
-        d2t = np.dot(theta2.T, d3t) * (a2t * (1 - a2t)) # (1, 26)
-        delta1 = delta1 + np.dot(d2t[1:, np.newaxis], a1t[np.newaxis, :])
-        delta2 = delta2 + np.dot(d3t[:, np.newaxis], a2t[np.newaxis, :])
+    # #--------------------PASO4---------------------------------------
 
-    # #--------------------PASO6---------------------------------------
-    delta1 = (1/m) * delta1
-    delta1[:, 1:] = delta1[:, 1:] + (reg/m) * theta1[:, 1:] 
+    delta_matrix_1 = delta_matrix_1 + np.transpose(np.dot(np.transpose(a1), delta_2)) #(25, 401)
+    delta_matrix_2 = delta_matrix_2 + np.transpose(np.dot(np.transpose(a2), delta_3)) #(10, 26)
+    #--------------------PASO6---------------------------------------
+    delta_matrix_1 = (1/m) * delta_matrix_1
+    delta_matrix_1[:, 1:] = delta_matrix_1[:, 1:] + (reg/m) * theta1[:, 1:] 
 
-    delta2 = (1/m) * delta2
-    delta2[:, 1:] = delta2[:, 1:] + (reg/m) * theta2[:, 1:] 
+    delta_matrix_2 = (1/m) * delta_matrix_2
+    delta_matrix_2[:, 1:] = delta_matrix_2[:, 1:] + (reg/m) * theta2[:, 1:] 
     
     
-    cost = J(X, y, h, num_etiquetas, theta1, theta2)
-    gradient = np.concatenate((np.ravel(delta1), np.ravel(delta2)))
+    cost = J(X, y, a3, num_etiquetas, theta1, theta2)
+    gradient = np.concatenate((np.ravel(delta_matrix_1), np.ravel(delta_matrix_2)))
     
     return cost, gradient
 
