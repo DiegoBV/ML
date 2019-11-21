@@ -16,9 +16,20 @@ def J(_theta, X, Y):
     """
     Cost function
     """
-    m = np.shape(X)[0]
-    aux = _lambda/(2*m) * np.sum(_theta**2)
-    return 1/(2*m) * np.sum((h(X, _theta) - Y)**2) + aux
+    n = np.shape(X)[1]
+    
+    _theta = np.reshape(_theta, (1, n))
+
+    diff = h(X, _theta) - Y
+    cost = np.dot(np.transpose(diff), diff)
+    cost = cost/(2*len(Y))
+    cost += (_lambda * (np.sum(_theta**2)) / (2 * len(Y)))
+    return cost
+
+    # m = np.shape(X)[0]
+    # aux = (_lambda/(2*m)) * np.sum(_theta**2)
+    # print("cost " + str(1/(2*m) * np.sum((h(X, _theta) - Y)**2) + aux))
+    # return (1/(2*m)) * np.sum((h(X, _theta) - Y)**2) + aux
 
 def gradient(theta, X, y):
     m = np.shape(X)[0]
@@ -40,7 +51,6 @@ def pesos_aleat(L_in, L_out):
 def minimizar(X, y, theta):
     return J(X, y, theta), gradient(X, y , theta)
 
-
 def draw_points_plot(X, Y, _theta):
     """
     Draw linear function with X points
@@ -55,7 +65,7 @@ data = loadmat('ex5data1.mat')
 X, y, Xval, yval, Xtest, ytest = data['X'], data['y'],  data['Xval'], data['yval'], data['Xtest'], data['ytest']
 X_transformed = Data_Management.add_column_left_of_matrix(X)
 
-theta = np.ones([1, np.shape(X_transformed)[1]], dtype=float)
+theta = np.ones(X_transformed.shape[1], dtype=float)
 
 print(gradient(theta, X_transformed, y))
 theta_min = sciMin(fun=minimizar, x0=theta,
