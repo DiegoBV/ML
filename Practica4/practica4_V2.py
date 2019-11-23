@@ -2,6 +2,8 @@ from ML_UtilsModule import Data_Management
 from scipy.optimize import minimize as sciMin
 from scipy.io import loadmat
 import numpy as np
+import displayData
+from matplotlib import pyplot as plt
 import checkNNGradients as check
 
 lambda_ = 1
@@ -39,7 +41,7 @@ def J(X, y, a3, num_etiquetas, theta1, theta2):
     aux3 = aux1 - aux2
     aux4 = np.sum(theta1**2) + np.sum(theta2**2)
     print (aux4)
-    return (1/m) * np.sum(aux3) + (learning_rate/(2*m)) * aux4
+    return (1/m) * np.sum(aux3) + (lambda_/(2*m)) * aux4
 
 def forward_propagate(X, theta1, theta2):
     m = X.shape[0]
@@ -111,6 +113,11 @@ def checkLearned(y, outputLayer):
 
 
 X, y = Data_Management.load_mat("ex4data1.mat")
+
+indexRand = np.random.randint(0, 5001, 100)
+displayData.displayData(X[indexRand[:]])
+plt.show()
+
 
 weights = loadmat('ex4weights.mat')
 theta1, theta2 = weights['Theta1'], weights['Theta2']
