@@ -81,6 +81,7 @@ Xval_transformed = Data_Management.add_column_left_of_matrix(Xval)
 
 error_array = np.array([], dtype=float)
 thetas = np.array([], dtype=float)
+error_array_val = np.array([], dtype=float)
 for i in range(1, np.shape(X_transformed)[0]):
     theta = np.ones(X_transformed.shape[1], dtype=float)
     
@@ -90,13 +91,9 @@ for i in range(1, np.shape(X_transformed)[0]):
     options={'maxiter': 70}).x
     
     error_array = np.append(error_array, error_hipotesis(theta_min, X_transformed[0:  i], y[0: i]))
+    error_array_val = np.append(error_array_val, error_hipotesis(theta_min, Xval_transformed, yval))
     thetas = np.append(thetas, theta_min)
 
-error_array_val = np.array([], dtype=float)
-for i in range(1, np.shape(Xval_transformed)[0]):
-    current_theta = np.array((thetas[14], thetas[15])) #que thetas usamos?
-    error_array_val = np.append(error_array_val, error_hipotesis(current_theta, Xval_transformed[0:  i], yval[0: i]))
-    
 plt.figure()
 draw_plot(np.linspace(0, np.shape(X_transformed)[0], len(error_array)), error_array)
 draw_plot(np.linspace(0, np.shape(Xval_transformed)[0], len(error_array_val)), error_array_val)
@@ -108,5 +105,5 @@ plt.show()
 #  method='TNC', jac=True,
 #  options={'maxiter': 70}).x
 
-# draw_points_plot(X_transformed, y, theta_min)
+draw_points_plot(X_transformed, y, theta_min)
 
