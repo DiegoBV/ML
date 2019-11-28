@@ -1,4 +1,5 @@
 from ML_UtilsModule import Data_Management
+from ML_UtilsModule import Normalization
 from scipy.optimize import minimize as sciMin
 from scipy.io import loadmat
 from matplotlib import pyplot as plt
@@ -58,8 +59,17 @@ def pesos_aleat(L_in, L_out):
     
     return pesos
 
-def minimizar(X, y, theta):
-    return J(X, y, theta), gradient(X, y , theta)
+def generate_polynom_data(X, p):
+    newMatrix = np.zeros((np.shape(X)[0], p))
+    grades = np.arange(1, p + 1)
+    newMatrix = X ** grades
+    return newMatrix
+
+def normalize_matrix(X):
+    return Normalization.normalize_data_matrix(X)
+
+def minimizar(theta, X, y):
+    return J(theta, X, y), gradient(theta, X, y)
 
 def draw_points_plot(X, Y, _theta):
     """
@@ -67,6 +77,7 @@ def draw_points_plot(X, Y, _theta):
     """
     plt.figure()
     plt.scatter(X[:, 1], Y, 20,marker='$F$',color= "red")
+    kk = h(X, _theta)
     plt.plot(X[:, 1:], h(X, _theta), color="grey")
     plt.show()
 
@@ -76,34 +87,46 @@ def draw_plot(X, Y):
 
 data = loadmat('ex5data1.mat')
 X, y, Xval, yval, Xtest, ytest = data['X'], data['y'],  data['Xval'], data['yval'], data['Xtest'], data['ytest']
-X_transformed = Data_Management.add_column_left_of_matrix(X)
-Xval_transformed = Data_Management.add_column_left_of_matrix(Xval)
+XPoly = generate_polynom_data(X, 2)
+XPoly, mu, sigma = normalize_matrix(XPoly)
+XPoly = Data_Management.add_column_left_of_matrix(XPoly)
 
-error_array = np.array([], dtype=float)
-thetas = np.array([], dtype=float)
-error_array_val = np.array([], dtype=float)
-for i in range(1, np.shape(X_transformed)[0]):
-    theta = np.ones(X_transformed.shape[1], dtype=float)
+theta = np.ones(XPoly.shape[1], dtype=float)
+theta_min = sciMin(fun=minimizar, x0=theta,
+ args=(XPoly, y),
+ method='TNC', jac=True,
+ options={'maxiter': 70}).x
+
+draw_points_plot(XPoly, y, theta_min)
+#---------------------------Parte 2 -------------------------------------
+# X_transformed = Data_Management.add_column_left_of_matrix(X)
+# Xval_transformed = Data_Management.add_column_left_of_matrix(Xval)
+
+# error_array = np.array([], dtype=float)
+# thetas = np.array([], dtype=float)
+# error_array_val = np.array([], dtype=float)
+# for i in range(1, np.shape(X_transformed)[0]):
+#     theta = np.ones(X_transformed.shape[1], dtype=float)
     
-    theta_min = sciMin(fun=minimizar, x0=theta,
-    args=(X_transformed[0:  i], y[0: i]),
-    method='TNC', jac=True,
-    options={'maxiter': 70}).x
+#     theta_min = sciMin(fun=minimizar, x0=theta,
+#     args=(X_transformed[0:  i], y[0: i]),
+#     method='TNC', jac=True,
+#     options={'maxiter': 70}).x
     
-    error_array = np.append(error_array, error_hipotesis(theta_min, X_transformed[0:  i], y[0: i]))
-    error_array_val = np.append(error_array_val, error_hipotesis(theta_min, Xval_transformed, yval))
-    thetas = np.append(thetas, theta_min)
+#     error_array = np.append(error_array, error_hipotesis(theta_min, X_transformed[0:  i], y[0: i]))
+#     error_array_val = np.append(error_array_val, error_hipotesis(theta_min, Xval_transformed, yval))
+#     thetas = np.append(thetas, theta_min)
 
-plt.figure()
-draw_plot(np.linspace(0, np.shape(X_transformed)[0], len(error_array)), error_array)
-draw_plot(np.linspace(0, np.shape(Xval_transformed)[0], len(error_array_val)), error_array_val)
-plt.show()
+# plt.figure()
+# draw_plot(np.linspace(0, np.shape(X_transformed)[0], len(error_array)), error_array)
+# draw_plot(np.linspace(0, np.shape(Xval_transformed)[0], len(error_array_val)), error_array_val)
+# plt.show()
 
-# theta = np.ones(X_transformed.shape[1], dtype=float)
-# theta_min = sciMin(fun=minimizar, x0=theta,
-#  args=(X_transformed, y),
-#  method='TNC', jac=True,
-#  options={'maxiter': 70}).x
+# # theta = np.ones(X_transformed.shape[1], dtype=float)
+# # theta_min = sciMin(fun=minimizar, x0=theta,
+# #  args=(X_transformed, y),
+# #  method='TNC', jac=True,
+# #  options={'maxiter': 70}).x
 
-draw_points_plot(X_transformed, y, theta_min)
+# draw_points_plot(X_transformed, y, theta_min)
 
