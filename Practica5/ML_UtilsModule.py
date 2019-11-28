@@ -78,6 +78,21 @@ class Normalization:
         return X_norm, mu, sigma
 
     @staticmethod
+    def normalize(X, mu, sigma):
+        """
+        Normalize the given matrix using the mean and deviation of every column (attribute).
+        Returns the normalized matrix, the mu vector (mean of every attribute) and sigma vector (deviation of every attribute).
+        """
+        n = np.shape(X)[1]
+        X_norm = np.empty_like(X)
+
+        for i in range(0, n):
+            new_value = (X[:, i] - mu[i])/sigma[i] #normalize
+            X_norm[:, i] = new_value
+
+        return X_norm
+
+    @staticmethod
     def normalize_single_attributes(attributes, mu, sigma):
         """
         Normalize a single set of different attributes using mu and sigma vectors obtained in a
