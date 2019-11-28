@@ -5,8 +5,6 @@ from scipy.io import loadmat
 from matplotlib import pyplot as plt
 import numpy as np
 
-_lambda = 0
-
 def polinomial_features(X, grado):
     poly = pf(grado)
     return (poly, poly.fit_transform(X))
@@ -50,13 +48,13 @@ def gradient(_theta, X, y, lamb):
     m = np.shape(X)[0]
     n = np.shape(X)[1]
     
-    _theta = np.reshape(_theta, (1, n))
-
-    var1 = h(X, _theta) - y
-    var2 = (lamb/m) * _theta #thetha[0] = 0
-
-    var3 = (1/m) * (np.dot(np.transpose(var1), X)) + var2
-    return np.transpose(var3)
+    theta = np.reshape(_theta, (1, n))
+    var1 = np.transpose(X)
+    var2  = h(X, theta)-y
+    
+    theta = np.c_[[0], theta[:, 1:]]
+    var3 = (lamb/m) * theta
+    return ((1/m) * np.dot(var1, var2)) + np.transpose(var3)
 
 def pesos_aleat(L_in, L_out):
     pesos = np.random.uniform(-0.12, 0.12, (L_out, 1+L_in))
@@ -104,10 +102,10 @@ def draw_plot(X, Y):
 
 data = loadmat('ex5data1.mat')
 X, y, Xval, yval, Xtest, ytest = data['X'], data['y'],  data['Xval'], data['yval'], data['Xtest'], data['ytest']
+theta = np.ones(X.shape[1] + 1, dtype=float)
 XPoly = generate_polynom_data(X, 8)
 XPoly, mu, sigma = normalize_matrix(XPoly)
 XPoly = Data_Management.add_column_left_of_matrix(XPoly)
-Xval_transformed = Data_Management.add_column_left_of_matrix(Xval)
 lambdaAux = [ 0, 0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 1, 3, 10 ]
 
 error_array = np.array([], dtype=float)
