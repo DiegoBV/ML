@@ -93,6 +93,11 @@ class Normalization:
         return X_norm
 
     @staticmethod
+    def normalize2(X, mu, sigma):
+        aux1 = X[:, :] - mu[0, :]
+        return aux1[:, :]/sigma[0, :]
+
+    @staticmethod
     def normalize_single_attributes(attributes, mu, sigma):
         """
         Normalize a single set of different attributes using mu and sigma vectors obtained in a

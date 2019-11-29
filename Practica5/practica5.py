@@ -3,6 +3,8 @@ from ML_UtilsModule import Normalization
 from scipy.optimize import minimize as sciMin
 from scipy.io import loadmat
 from matplotlib import pyplot as plt
+from sklearn.preprocessing import PolynomialFeatures as pf
+from sklearn import preprocessing
 import numpy as np
 
 def polinomial_features(X, grado):
@@ -82,12 +84,12 @@ def draw_points_plot(X, Y, _theta):
     plt.plot(X[:, 1:], h(X, _theta), color="grey")
     plt.show()
 
-def draw_decision_boundary(theta, X, Y, orX):
+def draw_decision_boundary(theta, X, Y, orX, mu, sigma):
     plt.figure()
     x0_min, x0_max = np.min(orX), np.max(orX)
     arrayX = np.arange(x0_min, x0_max, 0.05)
     arrayX = np.reshape(arrayX, (np.shape(arrayX)[0], 1))
-    arrayXaux = normalize_matrix(generate_polynom_data(arrayX, 8))[0]
+    arrayXaux = Normalization.normalize2(generate_polynom_data(arrayX, 8), mu, sigma)
     arrayXaux = Data_Management.add_column_left_of_matrix(arrayXaux)
     theta = np.reshape(theta, (np.shape(theta)[0], 1))
 
@@ -102,39 +104,55 @@ def draw_plot(X, Y):
 
 data = loadmat('ex5data1.mat')
 X, y, Xval, yval, Xtest, ytest = data['X'], data['y'],  data['Xval'], data['yval'], data['Xtest'], data['ytest']
-theta = np.ones(X.shape[1] + 1, dtype=float)
 XPoly = generate_polynom_data(X, 8)
 XPoly, mu, sigma = normalize_matrix(XPoly)
+mu = np.reshape(mu, (1, np.shape(mu)[0]))
+sigma = np.reshape(sigma, (1, np.shape(sigma)[0]))
 XPoly = Data_Management.add_column_left_of_matrix(XPoly)
-lambdaAux = [ 0, 0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 1, 3, 10 ]
+XPolyVal = Normalization.normalize2(generate_polynom_data(Xval, 8), mu, sigma)
+XPolyVal = Data_Management.add_column_left_of_matrix(XPolyVal)
+XPolyTest = Normalization.normalize2(generate_polynom_data(Xtest, 8), mu, sigma)
+XPolyTest = Data_Management.add_column_left_of_matrix(XPolyTest)
+
+lambdaAux = [ 0, 0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 1, 3, 10  ]
 
 error_array = np.array([], dtype=float)
 error_array_val = np.array([], dtype=float)
+thetas = np.array([], dtype=float)
 for l in range(len(lambdaAux)):
     theta = np.ones(XPoly.shape[1], dtype=float)
-
+    
     theta_min = sciMin(fun=minimizar, x0=theta,
     args=(XPoly, y, lambdaAux[l]),
     method='TNC', jac=True,
     options={'maxiter': 70}).x
-
+    
     error_array = np.append(error_array, J(theta_min, XPoly, y, lambdaAux[l]))
-    XPolyVal = Normalization.normalize(generate_polynom_data(Xval, 8), mu, sigma)
-    XPolyVal = Data_Management.add_column_left_of_matrix(XPolyVal)
     error_array_val = np.append(error_array_val, J(theta_min, XPolyVal, yval, lambdaAux[l]))
+    thetas = np.append(thetas, theta_min)
 
+lamdaIndex = np.argmin(error_array_val)
 plt.figure()
-draw_plot(np.linspace(0, 10, len(error_array)), error_array)
-draw_plot(np.linspace(0, 10, len(error_array_val)), error_array_val)
+draw_plot(lambdaAux, error_array)
+draw_plot(lambdaAux, error_array_val)
 plt.show()
+
+theta = np.ones(XPoly.shape[1], dtype=float)
+theta_min = sciMin(fun=minimizar, x0=theta,
+    args=(XPoly, y, lambdaAux[lamdaIndex]),
+    method='TNC', jac=True,
+    options={'maxiter': 70}).x
+
+print(J(theta_min, XPolyTest, ytest, lambdaAux[lamdaIndex]))
 #---------------------------------Parte3---------------------------------------------------
 # theta = np.ones(XPoly.shape[1], dtype=float)
+
 # theta_min = sciMin(fun=minimizar, x0=theta,
-#  args=(XPoly, y),
+#  args=(XPoly, y, 0),
 #  method='TNC', jac=True,
 #  options={'maxiter': 70}).x
 
-# #draw_decision_boundary(theta_min, XPoly, y, X)
+# draw_decision_boundary(theta_min, XPoly, y, X, mu, sigma)
 
 # error_array = np.array([], dtype=float)
 # error_array_val = np.array([], dtype=float)
@@ -142,18 +160,16 @@ plt.show()
 #     theta = np.ones(XPoly.shape[1], dtype=float)
     
 #     theta_min = sciMin(fun=minimizar, x0=theta,
-#     args=(XPoly[0:  i], y[0: i]),
+#     args=(XPoly[0:  i], y[0: i], 0),
 #     method='TNC', jac=True,
 #     options={'maxiter': 70}).x
     
 #     error_array = np.append(error_array, error_hipotesis(theta_min, XPoly[0:  i], y[0: i]))
-#     XPolyVal = Normalization.normalize(generate_polynom_data(Xval, 8), mu, sigma)
-#     XPolyVal = Data_Management.add_column_left_of_matrix(XPolyVal)
 #     error_array_val = np.append(error_array_val, error_hipotesis(theta_min, XPolyVal, yval))
 
 # plt.figure()
 # draw_plot(np.linspace(0, np.shape(XPoly)[0], len(error_array)), error_array)
-# draw_plot(np.linspace(0, np.shape(Xval_transformed)[0], len(error_array_val)), error_array_val)
+# draw_plot(np.linspace(0, np.shape(XPoly)[0], len(error_array_val)), error_array_val)
 # plt.show()
 #---------------------------Parte 2 -------------------------------------
 # X_transformed = Data_Management.add_column_left_of_matrix(X)
@@ -166,24 +182,24 @@ plt.show()
 #     theta = np.ones(X_transformed.shape[1], dtype=float)
     
 #     theta_min = sciMin(fun=minimizar, x0=theta,
-#     args=(X_transformed[0:  i], y[0: i]),
+#     args=(X_transformed[0:  i], y[0: i], 0),
 #     method='TNC', jac=True,
 #     options={'maxiter': 70}).x
     
-#     error_array = np.append(error_array, error_hipotesis(theta_min, X_transformed[0:  i], y[0: i]))
-#     error_array_val = np.append(error_array_val, error_hipotesis(theta_min, Xval_transformed, yval))
+#     error_array = np.append(error_array, J(theta_min, X_transformed[0:  i], y[0: i], 0))
+#     error_array_val = np.append(error_array_val, J(theta_min, Xval_transformed, yval, 0))
 #     thetas = np.append(thetas, theta_min)
 
 # plt.figure()
-# draw_plot(np.linspace(0, np.shape(X_transformed)[0], len(error_array)), error_array)
-# draw_plot(np.linspace(0, np.shape(Xval_transformed)[0], len(error_array_val)), error_array_val)
+# draw_plot(np.linspace(0, 10, len(error_array)), error_array)
+# draw_plot(np.linspace(0, 10, len(error_array_val)), error_array_val)
 # plt.show()
 
-# # theta = np.ones(X_transformed.shape[1], dtype=float)
-# # theta_min = sciMin(fun=minimizar, x0=theta,
-# #  args=(X_transformed, y),
-# #  method='TNC', jac=True,
-# #  options={'maxiter': 70}).x
+# theta = np.ones(X_transformed.shape[1], dtype=float)
+# theta_min = sciMin(fun=minimizar, x0=theta,
+#  args=(X_transformed, y),
+#  method='TNC', jac=True,
+#  options={'maxiter': 70}).x
 
-# draw_points_plot(X_transformed, y, theta_min)
+#draw_points_plot(X_transformed, y, theta_min)
 
