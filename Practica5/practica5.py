@@ -40,11 +40,6 @@ def J(_theta, X, Y, lamb):
     cost += (lamb * (np.sum(_theta**2)) / (2 * len(Y)))
     return cost
 
-    # m = np.shape(X)[0]
-    # aux = (_lambda/(2*m)) * np.sum(_theta**2)
-    # print("cost " + str(1/(2*m) * np.sum((h(X, _theta) - Y)**2) + aux))
-    # return (1/(2*m)) * np.sum((h(X, _theta) - Y)**2) + aux
-
 
 def gradient(_theta, X, y, lamb):
     m = np.shape(X)[0]
@@ -131,7 +126,7 @@ for l in range(len(lambdaAux)):
     error_array_val = np.append(error_array_val, J(theta_min, XPolyVal, yval, lambdaAux[l]))
     thetas = np.append(thetas, theta_min)
 
-lamdaIndex = np.argmin(error_array_val)
+lambdaIndex = np.argmin(error_array_val)
 plt.figure()
 draw_plot(lambdaAux, error_array)
 draw_plot(lambdaAux, error_array_val)
@@ -139,11 +134,12 @@ plt.show()
 
 theta = np.ones(XPoly.shape[1], dtype=float)
 theta_min = sciMin(fun=minimizar, x0=theta,
-    args=(XPoly, y, lambdaAux[lamdaIndex]),
+    args=(XPoly, y, lambdaAux[lambdaIndex]),
     method='TNC', jac=True,
     options={'maxiter': 70}).x
-
-print(J(theta_min, XPolyTest, ytest, lambdaAux[lamdaIndex]))
+    
+print("Best lambda: " + str(lambdaAux[lambdaIndex]))
+print(J(theta_min, XPolyTest, ytest, lambdaAux[lambdaIndex]))
 #---------------------------------Parte3---------------------------------------------------
 # theta = np.ones(XPoly.shape[1], dtype=float)
 
@@ -197,9 +193,9 @@ print(J(theta_min, XPolyTest, ytest, lambdaAux[lamdaIndex]))
 
 # theta = np.ones(X_transformed.shape[1], dtype=float)
 # theta_min = sciMin(fun=minimizar, x0=theta,
-#  args=(X_transformed, y),
+#  args=(X_transformed, y, 0),
 #  method='TNC', jac=True,
 #  options={'maxiter': 70}).x
 
-#draw_points_plot(X_transformed, y, theta_min)
+# draw_points_plot(X_transformed, y, theta_min)
 
