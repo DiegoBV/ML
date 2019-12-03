@@ -5,7 +5,13 @@ import numpy as np
 from process_email import *
 import codecs
 from get_vocab_dict import getVocabDict
+from os import listdir
+from os.path import isdir
+from os.path import isfile, join
 
+porcentaje_entrenamiento = 0.6
+porcentaje_validacion = 0.2
+porcentaje_test = 0.2
 
 def draw_decisition_boundary(X, y, svm):
     x1 = np.linspace(X[:, 0].min(), X[:, 0].max(), 100)
@@ -85,25 +91,82 @@ def procesar_mail(path, words_dictionary):
 
     return email_representation
 
+def getEmailsPathFromDirectory(directoryPath):
+        """
+        Iterates through the files of directoryPath and returns them
+        """
+        filesPath = [directoryPath + '/' + f for f in listdir(directoryPath) if isfile(join(directoryPath, f))]
+        return filesPath
+
+def getSets(spamMailsPath, hardHamMailsPath, easyHamMailsPath, words_dictionary):
+    total_size = len(spamMailsPath) + len(hardHamMailsPath) + len(easyHamMailsPath)
+    training_size = total_size * porcentaje_entrenamiento
+    val_size = total_size * porcentaje_validacion
+    test_size = total_size * porcentaje_test
+
+    X = np.array([[]], dtype=float)
+    y = np.array([[]], dtype=float)
+    Xval = np.array([], dtype=float)
+    yval = np.array([], dtype=float)
+    Xtest = np.array([], dtype=float)
+    ytest = np.array([], dtype=float)
+
+    for i in range(len(spamMailsPath)):
+        if i < len(spamMailsPath) * porcentaje_entrenamiento:
+            #todo cambiar todos los bucles y la X esta mal, se appendean todos juntos :P
+            X = np.append(X, procesar_mail(spamMailsPath[i], words_dictionary))
+            y = np.append(y, [[1]], axis = 1)
+        elif i < len(spamMailsPath) * porcentaje_entrenamiento + len(spamMailsPath) * porcentaje_validacion:
+            Xval = np.append(Xval, procesar_mail(spamMailsPath[i], words_dictionary))
+            yval = np.append(yval, 1)
+        else:
+            Xtest = np.append(Xtest, procesar_mail(spamMailsPath[i], words_dictionary))
+            ytest = np.append(ytest, 1)
+
+    for i in range(len(easyHamMailsPath)):
+        if i < len(easyHamMailsPath) * porcentaje_entrenamiento:
+            X = np.append(X, procesar_mail(easyHamMailsPath[i], words_dictionary), axis=1)
+            y = np.append(y, 0, axis=1)
+        elif i < len(easyHamMailsPath) * porcentaje_entrenamiento + len(easyHamMailsPath) * porcentaje_validacion:
+            Xval = np.append(Xval, procesar_mail(easyHamMailsPath[i], words_dictionary))
+            yval = np.append(yval, 0)
+        else:
+            Xtest = np.append(Xtest, procesar_mail(easyHamMailsPath[i], words_dictionary))
+            ytest = np.append(ytest, 0)
+
+    for i in range(len(hardHamMailsPath)):
+        if i < len(hardHamMailsPath) * porcentaje_entrenamiento:
+            X = np.append(X, procesar_mail(hardHamMailsPath[i], words_dictionary))
+            y = np.append(y, 0)
+        elif i < len(hardHamMailsPath) * porcentaje_entrenamiento + len(hardHamMailsPath) * porcentaje_validacion:
+            Xval = np.append(Xval, procesar_mail(hardHamMailsPath[i], words_dictionary))
+            yval = np.append(yval, 0)
+        else:
+            Xtest = np.append(Xtest, procesar_mail(hardHamMailsPath[i], words_dictionary))
+            ytest = np.append(ytest, 0)
+
+    return X, y, Xval, yval, Xtest, ytest
+
 def deteccionDeSpam():
     words_dictionary = getVocabDict()
-
+    spamMailsPath = getEmailsPathFromDirectory('./spam')
+    hardHamMailsPath = getEmailsPathFromDirectory('./hard_ham')
+    easyHamMailsPath = getEmailsPathFromDirectory('./easy_ham')
+    X, y, Xval, yval, Xtest, ytest = getSets(spamMailsPath, hardHamMailsPath, easyHamMailsPath, words_dictionary)
     #esto es conseguir los 3 diferentes conjuntos de los tres archivos, como dividirlo?
     X = np.empty((30, len(words_dictionary)))
-    y = np.empty((1, np.shape(X)[0]))
-    for i in range(10):
-        X[i] = procesar_mail('./spam/0001.txt', words_dictionary)
-        y[0, i] = 1 # es spam    
+    # y = np.empty((1, np.shape(X)[0]))
+    # for i in range(10):
+    #     X[i] = procesar_mail('./spam/0001.txt', words_dictionary)
+    #     y[0, i] = 1 # es spam    
 
-    for i in range(10):
-        X[10 + i] = procesar_mail('./easy_ham/0001.txt', words_dictionary)
-        y[0, 10 + i] = 0 # no es spam    
+    # for i in range(10):
+    #     X[10 + i] = procesar_mail('./easy_ham/0001.txt', words_dictionary)
+    #     y[0, 10 + i] = 0 # no es spam    
 
-    for i in range(10):
-        X[20 + i] = procesar_mail('./hard_ham/0001.txt', words_dictionary)
-        y[0, 20 + i] = 0 # no es spam    
-
-
+    # for i in range(10):
+    #     X[20 + i] = procesar_mail('./hard_ham/0001.txt', words_dictionary)
+    #     y[0, 20 + i] = 0 # no es spam    
 
 
 # kernel_lineal()
