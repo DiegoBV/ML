@@ -2,6 +2,9 @@ from matplotlib import pyplot as plt
 from sklearn.svm import SVC
 from scipy.io import loadmat
 import numpy as np
+from process_email import *
+import codecs
+from get_vocab_dict import getVocabDict
 
 
 def draw_decisition_boundary(X, y, svm):
@@ -69,6 +72,41 @@ def eleccion_parametros_C_y_Sigma():
     draw_decisition_boundary(X, y, best_svm)
     plt.show()
 
-kernel_lineal()
-kernel_gaussiano()
-eleccion_parametros_C_y_Sigma()
+def procesar_mail(path, words_dictionary):
+    email_contents = codecs.open(path, 'r', encoding='utf-8', errors='ignore').read()
+    email = email2TokenList(email_contents)
+    #email = palabras clave del email
+
+    email_representation = np.zeros((1, len(words_dictionary)))
+    for i in range(len(email)):
+        if email[i] in words_dictionary:
+            index = words_dictionary[email[i]] - 1
+            email_representation[0, index] = 1
+
+    return email_representation
+
+def deteccionDeSpam():
+    words_dictionary = getVocabDict()
+
+    #esto es conseguir los 3 diferentes conjuntos de los tres archivos, como dividirlo?
+    X = np.empty((30, len(words_dictionary)))
+    y = np.empty((1, np.shape(X)[0]))
+    for i in range(10):
+        X[i] = procesar_mail('./spam/0001.txt', words_dictionary)
+        y[0, i] = 1 # es spam    
+
+    for i in range(10):
+        X[10 + i] = procesar_mail('./easy_ham/0001.txt', words_dictionary)
+        y[0, 10 + i] = 0 # no es spam    
+
+    for i in range(10):
+        X[20 + i] = procesar_mail('./hard_ham/0001.txt', words_dictionary)
+        y[0, 20 + i] = 0 # no es spam    
+
+
+
+
+# kernel_lineal()
+# kernel_gaussiano()
+# eleccion_parametros_C_y_Sigma()
+deteccionDeSpam()
