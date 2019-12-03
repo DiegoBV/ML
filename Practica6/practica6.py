@@ -104,46 +104,47 @@ def getSets(spamMailsPath, hardHamMailsPath, easyHamMailsPath, words_dictionary)
     val_size = total_size * porcentaje_validacion
     test_size = total_size * porcentaje_test
 
-    X = np.array([[]], dtype=float)
+    #X = np.array(procesar_mail(spamMailsPath[0], words_dictionary), dtype=float)
+    X = np.empty((0, len(words_dictionary)))
     y = np.array([[]], dtype=float)
-    Xval = np.array([], dtype=float)
-    yval = np.array([], dtype=float)
-    Xtest = np.array([], dtype=float)
-    ytest = np.array([], dtype=float)
-
+    Xval = np.empty((0, len(words_dictionary)))
+    yval = np.array([[]], dtype=float)
+    Xtest = np.empty((0, len(words_dictionary)))
+    ytest = np.array([[]], dtype=float)
+    
     for i in range(len(spamMailsPath)):
         if i < len(spamMailsPath) * porcentaje_entrenamiento:
             #todo cambiar todos los bucles y la X esta mal, se appendean todos juntos :P
-            X = np.append(X, procesar_mail(spamMailsPath[i], words_dictionary))
+            X = np.vstack((X, procesar_mail(spamMailsPath[i], words_dictionary)))
             y = np.append(y, [[1]], axis = 1)
         elif i < len(spamMailsPath) * porcentaje_entrenamiento + len(spamMailsPath) * porcentaje_validacion:
-            Xval = np.append(Xval, procesar_mail(spamMailsPath[i], words_dictionary))
-            yval = np.append(yval, 1)
+            Xval = np.vstack((Xval, procesar_mail(spamMailsPath[i], words_dictionary)))
+            yval = np.append(yval, [[1]], axis = 1)
         else:
-            Xtest = np.append(Xtest, procesar_mail(spamMailsPath[i], words_dictionary))
-            ytest = np.append(ytest, 1)
+            Xtest = np.vstack((Xtest, procesar_mail(spamMailsPath[i], words_dictionary)))
+            ytest = np.append(ytest, [[1]], axis = 1)
 
     for i in range(len(easyHamMailsPath)):
         if i < len(easyHamMailsPath) * porcentaje_entrenamiento:
-            X = np.append(X, procesar_mail(easyHamMailsPath[i], words_dictionary), axis=1)
-            y = np.append(y, 0, axis=1)
+            X = np.vstack((X, procesar_mail(easyHamMailsPath[i], words_dictionary)))
+            y = np.append(y, [[0]], axis=1)
         elif i < len(easyHamMailsPath) * porcentaje_entrenamiento + len(easyHamMailsPath) * porcentaje_validacion:
-            Xval = np.append(Xval, procesar_mail(easyHamMailsPath[i], words_dictionary))
-            yval = np.append(yval, 0)
+            Xval = np.vstack((Xval, procesar_mail(easyHamMailsPath[i], words_dictionary)))
+            yval = np.append(yval, [[0]], axis=1)
         else:
-            Xtest = np.append(Xtest, procesar_mail(easyHamMailsPath[i], words_dictionary))
-            ytest = np.append(ytest, 0)
+            Xtest = np.vstack((Xtest, procesar_mail(easyHamMailsPath[i], words_dictionary)))
+            ytest = np.append(ytest, [[0]], axis=1)
 
     for i in range(len(hardHamMailsPath)):
         if i < len(hardHamMailsPath) * porcentaje_entrenamiento:
-            X = np.append(X, procesar_mail(hardHamMailsPath[i], words_dictionary))
-            y = np.append(y, 0)
+            X = np.vstack((X, procesar_mail(hardHamMailsPath[i], words_dictionary)))
+            y = np.append(y, [[0]], axis = 1)
         elif i < len(hardHamMailsPath) * porcentaje_entrenamiento + len(hardHamMailsPath) * porcentaje_validacion:
-            Xval = np.append(Xval, procesar_mail(hardHamMailsPath[i], words_dictionary))
-            yval = np.append(yval, 0)
+            Xval = np.vstack((Xval, procesar_mail(hardHamMailsPath[i], words_dictionary)))
+            yval = np.append(yval, [[0]], axis=1)
         else:
-            Xtest = np.append(Xtest, procesar_mail(hardHamMailsPath[i], words_dictionary))
-            ytest = np.append(ytest, 0)
+            Xtest = np.vstack((Xtest, procesar_mail(hardHamMailsPath[i], words_dictionary)))
+            ytest = np.append(ytest, [[0]], axis=1)
 
     return X, y, Xval, yval, Xtest, ytest
 
@@ -153,23 +154,29 @@ def deteccionDeSpam():
     hardHamMailsPath = getEmailsPathFromDirectory('./hard_ham')
     easyHamMailsPath = getEmailsPathFromDirectory('./easy_ham')
     X, y, Xval, yval, Xtest, ytest = getSets(spamMailsPath, hardHamMailsPath, easyHamMailsPath, words_dictionary)
-    #esto es conseguir los 3 diferentes conjuntos de los tres archivos, como dividirlo?
-    X = np.empty((30, len(words_dictionary)))
-    # y = np.empty((1, np.shape(X)[0]))
-    # for i in range(10):
-    #     X[i] = procesar_mail('./spam/0001.txt', words_dictionary)
-    #     y[0, i] = 1 # es spam    
 
-    # for i in range(10):
-    #     X[10 + i] = procesar_mail('./easy_ham/0001.txt', words_dictionary)
-    #     y[0, 10 + i] = 0 # no es spam    
+    possible_values = [0.01, 0.03, 0.1, 0.3, 1, 3, 10, 30]
+    C_value, sigma = 0, 0
+    max_score = 0
+    best_svm = None
 
-    # for i in range(10):
-    #     X[20 + i] = procesar_mail('./hard_ham/0001.txt', words_dictionary)
-    #     y[0, 20 + i] = 0 # no es spam    
+    for i in range(len(possible_values)):
+        C_value = possible_values[i]
+        for j in range(len(possible_values)):
+            sigma = possible_values[j]
+            svm = SVC(kernel = 'rbf' , C = C_value, gamma= (1 / ( 2 * sigma ** 2)))
+            svm.fit(X, y.ravel())
+            current_score = svm.score(Xval, yval.T) #calcula el score con los ejemplos de validacion (mayor score, mejor es el svm)
+            if current_score > max_score:
+                max_score = current_score
+                best_svm = svm
+    
+    plt.figure()
+    draw_decisition_boundary(X, y, best_svm)
+    plt.show()
 
 
 # kernel_lineal()
 # kernel_gaussiano()
-# eleccion_parametros_C_y_Sigma()
+#eleccion_parametros_C_y_Sigma()
 deteccionDeSpam()
