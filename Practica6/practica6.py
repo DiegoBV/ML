@@ -171,9 +171,10 @@ def deteccionDeSpam():
                 max_score = current_score
                 best_svm = svm
     
-    plt.figure()
-    draw_decisition_boundary(X, y, best_svm)
-    plt.show()
+    print("Score de clasificar los ejemplos de prueba: " + str(best_svm.score(Xtest, ytest.T)))
+    # plt.figure()
+    # draw_decisition_boundary(X, y, best_svm)
+    # plt.show()
 
 
 # kernel_lineal()
