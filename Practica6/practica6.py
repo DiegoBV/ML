@@ -172,12 +172,9 @@ def deteccionDeSpam():
                 best_svm = svm
     
     print("Score de clasificar los ejemplos de prueba: " + str(best_svm.score(Xtest, ytest.T)))
-    # plt.figure()
-    # draw_decisition_boundary(X, y, best_svm)
-    # plt.show()
 
 
-# kernel_lineal()
-# kernel_gaussiano()
-#eleccion_parametros_C_y_Sigma()
+kernel_lineal()
+kernel_gaussiano()
+eleccion_parametros_C_y_Sigma()
 deteccionDeSpam()
