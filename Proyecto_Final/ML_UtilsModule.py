@@ -20,7 +20,30 @@ class Data_Management:
         dataFile = dataFile.fillna(0)
         y = dataFile['is_legendary'].array
 
-        dataFile = dataFile.drop(['abilities', 'classfication', 'japanese_name', 'name', 'type1', 'type2', 'capture_rate','is_legendary'], axis =1).values
+        dataFile = dataFile.drop(['abilities', 'classfication', 'japanese_name', 'name', 'type1', 'type2', 
+                                  'against_bug', 'against_dark','against_dragon','against_electric','against_fairy','against_fight','against_fire','against_flying','against_ghost','against_grass','against_ground','against_ice','against_normal','against_poison','against_psychic','against_rock','against_steel','against_water',
+                                  'is_legendary'], axis =1).values
+    
+        #dataFile = dataFile['capture_rate'].array
+        
+        return dataFile, y
+    
+    @staticmethod
+    def load_csv_RedNeuronalV01(file_name):
+        """
+        Load the csv file. Returns numpy array
+        """
+        dataFile = read_csv(file_name, header = 0)
+
+        #dataFile['Gender'] = dataFile['Sex'].map({'female':0, 'male':1, }).astype(int)
+        #dataMatrix['pokedex_number'] = dataFile['pokedex_number']
+        #dataFile = dataFile.drop(["Minior"], axis = 775) #todo dropear esta fila no sabemos como
+        dataFile = dataFile.fillna(0)
+        y = dataFile['is_legendary'].array
+
+        dataFile = dataFile.drop(['abilities', 'classfication', 'japanese_name', 'name', 'type1', 'type2', 
+                                  'against_bug', 'against_dark','against_dragon','against_electric','against_fairy','against_fight','against_fire','against_flying','against_ghost','against_grass','against_ground','against_ice','against_normal','against_poison','against_psychic','against_rock','against_steel','against_water',
+                                  'is_legendary'], axis =1).values
         return dataFile, y
 
     @staticmethod

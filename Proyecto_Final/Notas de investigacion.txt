@@ -1,0 +1,7 @@
+- hay mucho recall en general pone todos como normales
+
+- el capture rate sube la precision (dependiendo del random) del 91 al 98. El capture rate parece ser una caracteristica que separa mucho en caso de descubridor de legendarios
+
+- hemos probado la red neuronal solo con el capture rate y sale una precision constante de 97.2534332084894%. Pensamos que puede estar bien estudiarlo a parte. Hacer true escore de capture rate solo y de con todos los datos para comparar.
+
+- hay que repetir el proceso varias veces para sacar el minimo real, estamos cayendo en minimos locales

@@ -112,31 +112,13 @@ X = np.array(X)
 y = np.array(y)
 y = np.reshape(y, (np.shape(y)[0], 1))
 
-# ----------------------------------------------------------------------------------------------------
-# TRAINIG GROUP
+# ------------------------------
 legendPos = np.where(y == 1)
 legendX = X[legendPos[0]]
 
 normiePos = np.where(y == 0)
 normieX = X[normiePos[0]]
-
-normTrain = int(np.shape(normieX)[0]/4)
-trainX = normieX[:normTrain]
-legendTrain = int(np.shape(legendX)[0]/2)
-trainX = np.concatenate((trainX, legendX[:legendTrain]))
-# ----------------------------------------------------------------------------------------------------
-# VALIDATION GROUP
-normValid = int(np.shape(normieX)[0]/2)
-validationX = normieX[normTrain:normValid+normTrain]
-legendValid = int(np.shape(legendX)[0]/4)
-validationX = np.concatenate((validationX, legendX[legendTrain:legendValid+legendTrain]))
-# ----------------------------------------------------------------------------------------------------
-# TESTING GROUP
-testingX = normieX[normValid+normTrain:]
-testingX = np.concatenate((testingX, legendX[legendValid+legendTrain:]))
-# ----------------------------------------------------------------------------------------------------
-
-
+# ------------------------------
 
 num_entradas = np.shape(X)[1]
 num_ocultas = 25
@@ -158,8 +140,8 @@ theta2 = np.reshape(thetas[num_ocultas*(num_entradas + 1):],
         (num_etiquetas, (num_ocultas + 1)))
 a, c = checkLearned(y, forward_propagate(X, theta1, theta2)[4])
 
-b = np.size(np.where(c== True))
-print("Precision de la red neuronal: " + str(a)+ " %")
+b = c
+print("Precision de la red neuronal: " + str(a + " %"))
     
 
 #print(check.checkNNGradients(backdrop, 0))
