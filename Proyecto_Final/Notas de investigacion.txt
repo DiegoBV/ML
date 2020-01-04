@@ -5,3 +5,15 @@
 - hemos probado la red neuronal solo con el capture rate y sale una precision constante de 97.2534332084894%. Pensamos que puede estar bien estudiarlo a parte. Hacer true escore de capture rate solo y de con todos los datos para comparar.
 
 - hay que repetir el proceso varias veces para sacar el minimo real, estamos cayendo en minimos locales
+
+// 04-01-2020
+- utilizando (por orden) grupos de train, validation y testing:
+	-con grupo de testing con todos los datos con lambda 1:
+		-precision: 0.9692307692307692
+		-recall: 0.9
+		-score: 0.9333333333333333
+	-con grupo de testing de los no utilizados con lambda 1:
+		-precision: 0.8235294117647058
+		-recall: 0.7777777777777778
+		-score: 0.7999999999999999
+	con estos grupos se cae en minimos locales y habra que coger ejemplos random o repitiendo el proceso y 	quedarnos con el mejor score

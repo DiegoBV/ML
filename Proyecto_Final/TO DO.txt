@@ -1,0 +1,13 @@
+- shuffle de los grupos 
+si vemos que no soluciona nada, estabiliza las graficas:
+	- elegir los pkm de los grupos de forma random
+
+- probar con las estadisticas de pkm de generaciones posteriores a la 7
+- probar a quitar todas las caracteristicas dejando solo stats de batalla y capture rate
+
+- pintar graficas(X/Y):
+	-(capture rate / is legendary) ejemplos de entrenamiento y funcion de clasificacion
+
+
+- clasificador de tipo en funcion de stats de batalla
+	- graficas en funcion de los stats con el tipo de pkm de colores

@@ -4,7 +4,7 @@ from scipy.io import loadmat
 import numpy as np
 from matplotlib import pyplot as plt
 
-lambda_ = 1
+lambda_ = 5
 
 def g(z):
     """
@@ -101,11 +101,37 @@ def backdrop(params_rn, num_entradas, num_ocultas, num_etiquetas, X, y, reg):
     return cost, gradient
 
 def checkLearned(y, outputLayer):     
-    checker = (outputLayer > 0.7) 
-    count = np.size(np.where(checker[:, 0] == y[:, 0])) 
-    fin = count/np.shape(y)[0] * 100
-    return fin, checker
+    checker = (outputLayer > 0.7)
+    truePositives = 0
+    falsePositives = 0
+    falseNegatives = 0
+    
+    for i in range(np.size(checker)):
+        if checker[i, 0] == True and y[i, 0] == 1:
+            truePositives += 1
+        elif checker[i, 0] == True and y[i, 0] == 0:
+            falsePositives += 1
+        elif checker[i, 0] == False and y[i, 0] == 1:
+            falseNegatives += 1    
+    
+    if truePositives == 0:
+        return 0
+    recall = (truePositives/(truePositives + falseNegatives)) 
+    precision = (truePositives/(truePositives + falsePositives))
+    score = 2 *(precision*recall/(precision + recall))
+    
+    # PORCENTAJE DE ACIERTOS TOTALES
+    #count = np.size(np.where(checker[:, 0] == y[:, 0])) 
+    #fin = count/np.shape(y)[0] * 100
+    
+    return score 
 
+def pintaTodo(X, y, error, errorTr):
+    plt.figure()
+    #plt.ylim(0,1)
+    plt.plot(np.linspace(0,len(error)-1, len(error), dtype = int), error[:], color="grey")
+    plt.plot(np.linspace(0,len(errorTr)-1, len(errorTr), dtype = int), errorTr[:], color="green")
+    plt.show()
 
 X, y = Data_Management.load_csv("pokemon.csv")
 X = np.array(X)
@@ -113,27 +139,38 @@ y = np.array(y)
 y = np.reshape(y, (np.shape(y)[0], 1))
 
 # ----------------------------------------------------------------------------------------------------
-# TRAINIG GROUP
 legendPos = np.where(y == 1)
 legendX = X[legendPos[0]]
+legendY = y[legendPos[0]]
 
 normiePos = np.where(y == 0)
 normieX = X[normiePos[0]]
-
+normieY = y[normiePos[0]]
+# ----------------------------------------------------------------------------------------------------
+# TRAINIG GROUP
 normTrain = int(np.shape(normieX)[0]/4)
 trainX = normieX[:normTrain]
+trainY= normieY[:normTrain]
+
 legendTrain = int(np.shape(legendX)[0]/2)
 trainX = np.concatenate((trainX, legendX[:legendTrain]))
+trainY = np.concatenate((trainY, legendY[:legendTrain]))
 # ----------------------------------------------------------------------------------------------------
 # VALIDATION GROUP
 normValid = int(np.shape(normieX)[0]/2)
 validationX = normieX[normTrain:normValid+normTrain]
+validationY = normieY[normTrain:normValid+normTrain]
+
 legendValid = int(np.shape(legendX)[0]/4)
 validationX = np.concatenate((validationX, legendX[legendTrain:legendValid+legendTrain]))
+validationY = np.concatenate((validationY, legendY[legendTrain:legendValid+legendTrain]))
 # ----------------------------------------------------------------------------------------------------
 # TESTING GROUP
 testingX = normieX[normValid+normTrain:]
 testingX = np.concatenate((testingX, legendX[legendValid+legendTrain:]))
+
+testingY = normieY[normValid+normTrain:]
+testingY = np.concatenate((testingY, legendY[legendValid+legendTrain:]))
 # ----------------------------------------------------------------------------------------------------
 
 
@@ -147,19 +184,37 @@ theta2 = pesos_aleat(num_ocultas, num_etiquetas)
 
 theta_vector = np.concatenate((np.ravel(theta1), np.ravel(theta2)))
 
-thetas = sciMin(fun=backdrop, x0=theta_vector,
- args=(num_entradas, num_ocultas, num_etiquetas, X, y, lambda_),
- method='TNC', jac=True,
- options={'maxiter': 70}).x
 
-theta1 = np.reshape(thetas[:num_ocultas*(num_entradas + 1)], 
-        (num_ocultas, (num_entradas + 1)))
-theta2 = np.reshape(thetas[num_ocultas*(num_entradas + 1):], 
-        (num_etiquetas, (num_ocultas + 1)))
-a, c = checkLearned(y, forward_propagate(X, theta1, theta2)[4])
+thetaMin1 = None
+thetaMin2 = None
+errorMin = float("inf")
+auxErr = []
+auxErrTr = []
 
-b = np.size(np.where(c== True))
-print("Precision de la red neuronal: " + str(a)+ " %")
+for i in range(1, np.shape(trainX)[0]):
+    thetas = sciMin(fun=backdrop, x0=theta_vector,
+     args=(num_entradas, num_ocultas, num_etiquetas, trainX[:i], trainY[:i], lambda_),
+     method='TNC', jac=True,
+     options={'maxiter': 70}).x
+
+    theta1 = np.reshape(thetas[:num_ocultas*(num_entradas + 1)], 
+            (num_ocultas, (num_entradas + 1)))
+    theta2 = np.reshape(thetas[num_ocultas*(num_entradas + 1):], 
+            (num_etiquetas, (num_ocultas + 1)))
     
+    auxErr.append(J(validationX, validationY, forward_propagate(validationX, theta1, theta2)[4], num_etiquetas, theta1, theta2))
+    auxErrTr.append(J(trainX[:i], trainY[:i], forward_propagate(trainX[:i], theta1, theta2)[4], num_etiquetas, theta1, theta2))
+    
+    if errorMin > auxErr[-1]:
+        errorMin = auxErr[-1]
+        thetaMin1 = theta1
+        thetaMin2 = theta2
+
+
+a = checkLearned(testingY, forward_propagate(testingX, thetaMin1, thetaMin2)[4])
+
+print("True Score de la red neuronal: " + str(a))
+
+pintaTodo(testingX, testingY, auxErr, auxErrTr)
 
 #print(check.checkNNGradients(backdrop, 0))
