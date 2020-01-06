@@ -1,0 +1,7 @@
+svm con muchas caracteristicas son bastante useless (tardan mucho, muy poco recall)
+svm con pocas caracteristicas son bastante mejores. Pruebas solo con el capture rate, con score 0.5185 sobre ejemplos de testing. Se equivoca mucho porq solo
+una feature es poca informacion (muchos legendarios tienen capture rate de 3, hay otros con 255 o_O)
+Increiblemente, el numero de pasos para abrir el huevo y el capture rate incrementa el true score a 0.75.
+Mejor aun, solo los pasos para abrir el huevo hace q el score sea de 0.8235
+Kernel lineal con capture rate y base_egg_steps score de 0.545, imagen en carpeta (todos los pokimons)
+con kernel gaussiano sale de 0.94 pero la imagen es extrañisima (todos los pokimons)

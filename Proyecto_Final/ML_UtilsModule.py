@@ -47,6 +47,23 @@ class Data_Management:
         return dataFile, y
 
     @staticmethod
+    def load_csv_svm(file_name, features):
+        """
+        Load the csv file. Returns numpy array
+        """
+        dataFile = read_csv(file_name, header = 0)
+
+        dataFile = dataFile.fillna(0)
+        y = dataFile['is_legendary'].array
+
+        X = np.array([])
+        X = np.reshape(X, (len(y), 0))
+        for i in range(len(features)):
+            X = np.c_[X, dataFile[features[i]].array]
+        
+        return X, y
+
+    @staticmethod
     def get_parameters_from_training_examples(training_examples):
         """
         Returns the needed parameters from the training examples, aka X, Y, m, n
