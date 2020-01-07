@@ -77,7 +77,7 @@ def eleccion_parametros_C_y_Sigma(X, y, Xval, yval):
     
     return best_svm
 
-X, y = Data_Management.load_csv_svm("pokemon.csv", ["capture_rate", "base_egg_steps"])
+X, y = Data_Management.load_csv_svm("pokemon.csv", ["base_egg_steps"])
 X = np.array(X)
 y = np.array(y)
 y = np.reshape(y, (np.shape(y)[0], 1))
@@ -117,8 +117,8 @@ testingY = normieY[normValid+normTrain:]
 testingY = np.concatenate((testingY, legendY[legendValid+legendTrain:]))
 
 svm = eleccion_parametros_C_y_Sigma(trainX, trainY, validationX, validationY)
-plt.figure()
-draw_decisition_boundary(X, y, svm)
-plt.show()
+# plt.figure()
+# draw_decisition_boundary(X, y, svm)
+# plt.show()
 print(svm.predict(testingX))
 print("Score con los ejemplos de testing: " + str(true_score(testingX, testingY, svm)))

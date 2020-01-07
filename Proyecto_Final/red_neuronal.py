@@ -4,7 +4,8 @@ from scipy.io import loadmat
 import numpy as np
 from matplotlib import pyplot as plt
 
-lambda_ = 5
+lambda_ = 1
+NUM_TRIES = 10
 
 def g(z):
     """
@@ -116,28 +117,40 @@ def checkLearned(y, outputLayer):
     
     if truePositives == 0:
         return 0
+        
     recall = (truePositives/(truePositives + falseNegatives)) 
     precision = (truePositives/(truePositives + falsePositives))
     score = 2 *(precision*recall/(precision + recall))
     
     # PORCENTAJE DE ACIERTOS TOTALES
-    #count = np.size(np.where(checker[:, 0] == y[:, 0])) 
+    #count = np.size(np.where(checker[:, 0] == çy[:, 0])) 
     #fin = count/np.shape(y)[0] * 100
     
     return score 
 
-def pintaTodo(X, y, error, errorTr):
+def shuffle_in_unison_scary(a, b):
+    rng_state = np.random.get_state()
+    np.random.shuffle(a)
+    np.random.set_state(rng_state)
+    np.random.shuffle(b)
+
+    return a, b
+
+def pintaTodo(X, y, error, errorTr, true_score):
     plt.figure()
     #plt.ylim(0,1)
     plt.plot(np.linspace(0,len(error)-1, len(error), dtype = int), error[:], color="grey")
     plt.plot(np.linspace(0,len(errorTr)-1, len(errorTr), dtype = int), errorTr[:], color="green")
+    plt.suptitle(("Score: " + str(true_score)))
+    
     plt.show()
 
-X, y = Data_Management.load_csv("pokemon.csv")
+X, y = Data_Management.load_csv_svm("pokemon.csv", ["attack", "defense", "hp", "sp_attack", "sp_defense", "speed", "capture_rate", "base_egg_steps"])
 X = np.array(X)
 y = np.array(y)
 y = np.reshape(y, (np.shape(y)[0], 1))
 
+X, y = shuffle_in_unison_scary(X, y)
 # ----------------------------------------------------------------------------------------------------
 legendPos = np.where(y == 1)
 legendX = X[legendPos[0]]
@@ -155,6 +168,7 @@ trainY= normieY[:normTrain]
 legendTrain = int(np.shape(legendX)[0]/2)
 trainX = np.concatenate((trainX, legendX[:legendTrain]))
 trainY = np.concatenate((trainY, legendY[:legendTrain]))
+trainX, trainY = shuffle_in_unison_scary(trainX, trainY)
 # ----------------------------------------------------------------------------------------------------
 # VALIDATION GROUP
 normValid = int(np.shape(normieX)[0]/2)
@@ -164,6 +178,7 @@ validationY = normieY[normTrain:normValid+normTrain]
 legendValid = int(np.shape(legendX)[0]/4)
 validationX = np.concatenate((validationX, legendX[legendTrain:legendValid+legendTrain]))
 validationY = np.concatenate((validationY, legendY[legendTrain:legendValid+legendTrain]))
+validationX, validationY = shuffle_in_unison_scary(validationX, validationY)
 # ----------------------------------------------------------------------------------------------------
 # TESTING GROUP
 testingX = normieX[normValid+normTrain:]
@@ -171,50 +186,67 @@ testingX = np.concatenate((testingX, legendX[legendValid+legendTrain:]))
 
 testingY = normieY[normValid+normTrain:]
 testingY = np.concatenate((testingY, legendY[legendValid+legendTrain:]))
+testingX, testingY = shuffle_in_unison_scary(testingX, testingY)
 # ----------------------------------------------------------------------------------------------------
-
 
 
 num_entradas = np.shape(X)[1]
 num_ocultas = 25
 num_etiquetas = 1
-
-theta1 = pesos_aleat(num_entradas, num_ocultas)
-theta2 = pesos_aleat(num_ocultas, num_etiquetas)
-
-theta_vector = np.concatenate((np.ravel(theta1), np.ravel(theta2)))
+true_score_max = float("-inf")
 
 
-thetaMin1 = None
-thetaMin2 = None
-errorMin = float("inf")
-auxErr = []
-auxErrTr = []
+thetaTrueMin1 = None
+thetaTrueMin2 = None
 
-for i in range(1, np.shape(trainX)[0]):
-    thetas = sciMin(fun=backdrop, x0=theta_vector,
-     args=(num_entradas, num_ocultas, num_etiquetas, trainX[:i], trainY[:i], lambda_),
-     method='TNC', jac=True,
-     options={'maxiter': 70}).x
+for j in range(NUM_TRIES):
+    theta1 = pesos_aleat(num_entradas, num_ocultas)
+    theta2 = pesos_aleat(num_ocultas, num_etiquetas)
 
-    theta1 = np.reshape(thetas[:num_ocultas*(num_entradas + 1)], 
-            (num_ocultas, (num_entradas + 1)))
-    theta2 = np.reshape(thetas[num_ocultas*(num_entradas + 1):], 
-            (num_etiquetas, (num_ocultas + 1)))
-    
-    auxErr.append(J(validationX, validationY, forward_propagate(validationX, theta1, theta2)[4], num_etiquetas, theta1, theta2))
-    auxErrTr.append(J(trainX[:i], trainY[:i], forward_propagate(trainX[:i], theta1, theta2)[4], num_etiquetas, theta1, theta2))
-    
-    if errorMin > auxErr[-1]:
-        errorMin = auxErr[-1]
-        thetaMin1 = theta1
-        thetaMin2 = theta2
+    theta_vector = np.concatenate((np.ravel(theta1), np.ravel(theta2)))
+
+    auxErr = []
+    auxErrTr = []
+    thetaMin1 = None
+    thetaMin2 = None
+    errorMin = float("inf")
+
+    for i in range(1, np.shape(trainX)[0]):
+        thetas = sciMin(fun=backdrop, x0=theta_vector,
+        args=(num_entradas, num_ocultas, num_etiquetas, trainX[:i], trainY[:i], lambda_),
+        method='TNC', jac=True,
+        options={'maxiter': 70}).x
+
+        theta1 = np.reshape(thetas[:num_ocultas*(num_entradas + 1)], 
+                (num_ocultas, (num_entradas + 1)))
+        theta2 = np.reshape(thetas[num_ocultas*(num_entradas + 1):], 
+                (num_etiquetas, (num_ocultas + 1)))
+        
+        auxErr.append(J(validationX, validationY, forward_propagate(validationX, theta1, theta2)[4], num_etiquetas, theta1, theta2))
+        auxErrTr.append(J(trainX[:i], trainY[:i], forward_propagate(trainX[:i], theta1, theta2)[4], num_etiquetas, theta1, theta2))
+        
+        if errorMin > auxErr[-1]:
+            errorMin = auxErr[-1]
+            thetaMin1 = theta1
+            thetaMin2 = theta2
 
 
-a = checkLearned(testingY, forward_propagate(testingX, thetaMin1, thetaMin2)[4])
+    true_score = checkLearned(testingY, forward_propagate(testingX, thetaMin1, thetaMin2)[4])
+    if true_score > true_score_max:
+        true_score_max = true_score
+        thetaTrueMin1 = thetaMin1
+        thetaTrueMin2 = thetaMin2
+        pintaTodo(testingX, testingY, auxErr, auxErrTr, true_score)
 
-print("True Score de la red neuronal: " + str(a))
 
-pintaTodo(testingX, testingY, auxErr, auxErrTr)
+print("True Score de la red neuronal: " + str(true_score_max) + "\n")
+while True:
+    user_values = np.array(list(map(float, input("Gimme stats: ").split())), dtype=float) # (features, )
+    if user_values.size == 0:
+        break
+    user_values = np.reshape(user_values, (np.shape(user_values)[0], 1))
+    user_values = np.transpose(user_values)
+    sol = forward_propagate(user_values, thetaTrueMin1, thetaTrueMin2)[4]
+    print("Is your pokemon legendary?: " + sol > 0.7 + "\n")
 
 #print(check.checkNNGradients(backdrop, 0))
