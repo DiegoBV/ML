@@ -5,7 +5,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 lambda_ = 1
-NUM_TRIES = 1
+NUM_TRIES = 10
 
 def g(z):
     """

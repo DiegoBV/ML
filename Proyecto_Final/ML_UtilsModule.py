@@ -64,19 +64,6 @@ class Data_Management:
         return X, y
 
     @staticmethod
-    def get_parameters_from_training_examples(training_examples):
-        """
-        Returns the needed parameters from the training examples, aka X, Y, m, n
-        """
-        X = training_examples[:, :-1] #every col but the last
-        m = np.shape(X)[0] #number of training examples
-        n = np.shape(X)[1] #number of attributes
-        Y = training_examples[:, -1] #the last col, every row
-        Y = np.reshape(Y, (m, 1)) #dont know why this is needed, but it is (needed for numpy operations)
-
-        return X, Y, m, n
-
-    @staticmethod
     def add_column_left_of_matrix(matrix):
         new_matrix = np.hstack([np.ones([np.shape(matrix)[0], 1]), matrix]) #convention in linear regr
         return new_matrix
@@ -85,19 +72,6 @@ class Data_Management:
     def add_column_top_of_matrix(matrix):
         new_matrix = np.vstack([np.ones([1, np.shape(matrix)[1]]), matrix]) #convention in linear regr
         return new_matrix
-    
-    @staticmethod
-    def load_mat(file_name):
-        data = loadmat(file_name)
-        y = data['y']
-        X = data['X']
-        return X, y
-
-    @staticmethod
-    def draw_random_examples(X):
-        sample = np.random.choice(X.shape[0], 10)
-        plt.imshow(X[sample, :].reshape(-1, 20).T)
-        plt.axis('off')
 
     @staticmethod
     def shuffle_in_unison_scary(a, b):
@@ -153,8 +127,6 @@ class Data_Management:
         testingX, testingY = Data_Management.shuffle_in_unison_scary(testingX, testingY)
 
         return X, y, trainX, trainY, validationX, validationY, testingX, testingY
-
-
 
 class Normalization:
     """

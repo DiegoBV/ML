@@ -86,6 +86,7 @@ max_score = float("-inf")
 best_svm = None
 
 for i in range(NUM_TRIES):
+    #THIS IS GIVING THE SAME RESULT, ALWAYS (MAYBE SELECT C AND SIGMA RANDOMLY)
     seed = np.random.seed()
     current_svm = eleccion_parametros_C_y_Sigma(trainX, trainY, validationX, validationY)
     # plt.figure()
