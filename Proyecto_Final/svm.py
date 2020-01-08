@@ -4,6 +4,8 @@ import numpy as np
 from ML_UtilsModule import Data_Management
 from sklearn.metrics import confusion_matrix
 
+NUM_TRIES = 1
+
 def draw_decisition_boundary(X, y, svm):
     """
     valid for one feature
@@ -68,7 +70,7 @@ def eleccion_parametros_C_y_Sigma(X, y, Xval, yval):
         C_value = possible_values[i]
         for j in range(len(possible_values)):
             sigma = possible_values[j]
-            svm = SVC(kernel = 'rbf' , C = C_value, gamma= (1 / ( 2 * sigma ** 2)))
+            svm = SVC(kernel = 'rbf' , C = C_value, gamma= (1 / ( 2 * sigma ** 2)), probability=True)
             svm.fit(X, y.ravel())
             current_score = true_score(Xval, yval, svm) #calcula el score con los ejemplos de validacion (mayor score, mejor es el svm)
             if current_score > max_score:
@@ -77,48 +79,29 @@ def eleccion_parametros_C_y_Sigma(X, y, Xval, yval):
     
     return best_svm
 
-X, y = Data_Management.load_csv_svm("pokemon.csv", ["base_egg_steps"])
-X = np.array(X)
-y = np.array(y)
-y = np.reshape(y, (np.shape(y)[0], 1))
+X, y = Data_Management.load_csv_svm("pokemon.csv", ["capture_rate", "base_egg_steps"])
+X, y, trainX, trainY, validationX, validationY, testingX, testingY = Data_Management.divide_legendary_groups(X, y)
 
-# ----------------------------------------------------------------------------------------------------
-legendPos = np.where(y == 1)
-legendX = X[legendPos[0]]
-legendY = y[legendPos[0]]
+max_score = float("-inf")
+best_svm = None
 
-normiePos = np.where(y == 0)
-normieX = X[normiePos[0]]
-normieY = y[normiePos[0]]
-# ----------------------------------------------------------------------------------------------------
-# TRAINIG GROUP
-normTrain = int(np.shape(normieX)[0]/4)
-trainX = normieX[:normTrain]
-trainY= normieY[:normTrain]
+for i in range(NUM_TRIES):
+    seed = np.random.seed()
+    current_svm = eleccion_parametros_C_y_Sigma(trainX, trainY, validationX, validationY)
+    # plt.figure()
+    # draw_decisition_boundary(X, y, current_svm)
+    # plt.show()
+    current_score = true_score(testingX, testingY, current_svm)
+    print("Score con los ejemplos de testing: " + str(current_score))
+    if current_score > max_score:
+        max_score = current_score
+        best_svm = current_svm
 
-legendTrain = int(np.shape(legendX)[0]/2)
-trainX = np.concatenate((trainX, legendX[:legendTrain]))
-trainY = np.concatenate((trainY, legendY[:legendTrain]))
-# ----------------------------------------------------------------------------------------------------
-# VALIDATION GROUP
-normValid = int(np.shape(normieX)[0]/2)
-validationX = normieX[normTrain:normValid+normTrain]
-validationY = normieY[normTrain:normValid+normTrain]
-
-legendValid = int(np.shape(legendX)[0]/4)
-validationX = np.concatenate((validationX, legendX[legendTrain:legendValid+legendTrain]))
-validationY = np.concatenate((validationY, legendY[legendTrain:legendValid+legendTrain]))
-# ----------------------------------------------------------------------------------------------------
-# TESTING GROUP
-testingX = normieX[normValid+normTrain:]
-testingX = np.concatenate((testingX, legendX[legendValid+legendTrain:]))
-
-testingY = normieY[normValid+normTrain:]
-testingY = np.concatenate((testingY, legendY[legendValid+legendTrain:]))
-
-svm = eleccion_parametros_C_y_Sigma(trainX, trainY, validationX, validationY)
-# plt.figure()
-# draw_decisition_boundary(X, y, svm)
-# plt.show()
-print(svm.predict(testingX))
-print("Score con los ejemplos de testing: " + str(true_score(testingX, testingY, svm)))
+while True:
+    user_values = np.array(list(map(float, input("Gimme stats: ").split())), dtype=float) # (features, )
+    if user_values.size == 0:
+        break
+    user_values = np.reshape(user_values, (np.shape(user_values)[0], 1))
+    user_values = np.transpose(user_values)
+    sol = best_svm.predict(user_values)
+    print("Is your pokemon legendary?: " + str(sol[0] == 1.0) + "\n")

@@ -99,6 +99,62 @@ class Data_Management:
         plt.imshow(X[sample, :].reshape(-1, 20).T)
         plt.axis('off')
 
+    @staticmethod
+    def shuffle_in_unison_scary(a, b):
+        rng_state = np.random.get_state()
+        np.random.shuffle(a)
+        np.random.set_state(rng_state)
+        np.random.shuffle(b)
+
+        return a, b
+
+    @staticmethod
+    def divide_legendary_groups(X, y):
+        X = np.array(X)
+        y = np.array(y)
+        y = np.reshape(y, (np.shape(y)[0], 1))
+
+        X, y = Data_Management.shuffle_in_unison_scary(X, y)
+        # ----------------------------------------------------------------------------------------------------
+        legendPos = np.where(y == 1)
+        legendX = X[legendPos[0]]
+        legendY = y[legendPos[0]]
+
+        normiePos = np.where(y == 0)
+        normieX = X[normiePos[0]]
+        normieY = y[normiePos[0]]
+        # ----------------------------------------------------------------------------------------------------
+        # TRAINIG GROUP
+        normTrain = int(np.shape(normieX)[0]/4)
+        trainX = normieX[:normTrain]
+        trainY= normieY[:normTrain]
+
+        legendTrain = int(np.shape(legendX)[0]/2)
+        trainX = np.concatenate((trainX, legendX[:legendTrain]))
+        trainY = np.concatenate((trainY, legendY[:legendTrain]))
+        trainX, trainY = Data_Management.shuffle_in_unison_scary(trainX, trainY)
+        # ----------------------------------------------------------------------------------------------------
+        # VALIDATION GROUP
+        normValid = int(np.shape(normieX)[0]/2)
+        validationX = normieX[normTrain:normValid+normTrain]
+        validationY = normieY[normTrain:normValid+normTrain]
+
+        legendValid = int(np.shape(legendX)[0]/4)
+        validationX = np.concatenate((validationX, legendX[legendTrain:legendValid+legendTrain]))
+        validationY = np.concatenate((validationY, legendY[legendTrain:legendValid+legendTrain]))
+        validationX, validationY = Data_Management.shuffle_in_unison_scary(validationX, validationY)
+        # ----------------------------------------------------------------------------------------------------
+        # TESTING GROUP
+        testingX = normieX[normValid+normTrain:]
+        testingX = np.concatenate((testingX, legendX[legendValid+legendTrain:]))
+
+        testingY = normieY[normValid+normTrain:]
+        testingY = np.concatenate((testingY, legendY[legendValid+legendTrain:]))
+        testingX, testingY = Data_Management.shuffle_in_unison_scary(testingX, testingY)
+
+        return X, y, trainX, trainY, validationX, validationY, testingX, testingY
+
+
 
 class Normalization:
     """

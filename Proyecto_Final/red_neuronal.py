@@ -5,7 +5,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 lambda_ = 1
-NUM_TRIES = 10
+NUM_TRIES = 1
 
 def g(z):
     """
@@ -128,14 +128,6 @@ def checkLearned(y, outputLayer):
     
     return score 
 
-def shuffle_in_unison_scary(a, b):
-    rng_state = np.random.get_state()
-    np.random.shuffle(a)
-    np.random.set_state(rng_state)
-    np.random.shuffle(b)
-
-    return a, b
-
 def pintaTodo(X, y, error, errorTr, true_score):
     plt.figure()
     #plt.ylim(0,1)
@@ -146,55 +138,12 @@ def pintaTodo(X, y, error, errorTr, true_score):
     plt.show()
 
 X, y = Data_Management.load_csv_svm("pokemon.csv", ["attack", "defense", "hp", "sp_attack", "sp_defense", "speed", "capture_rate", "base_egg_steps"])
-X = np.array(X)
-y = np.array(y)
-y = np.reshape(y, (np.shape(y)[0], 1))
-
-X, y = shuffle_in_unison_scary(X, y)
-# ----------------------------------------------------------------------------------------------------
-legendPos = np.where(y == 1)
-legendX = X[legendPos[0]]
-legendY = y[legendPos[0]]
-
-normiePos = np.where(y == 0)
-normieX = X[normiePos[0]]
-normieY = y[normiePos[0]]
-# ----------------------------------------------------------------------------------------------------
-# TRAINIG GROUP
-normTrain = int(np.shape(normieX)[0]/4)
-trainX = normieX[:normTrain]
-trainY= normieY[:normTrain]
-
-legendTrain = int(np.shape(legendX)[0]/2)
-trainX = np.concatenate((trainX, legendX[:legendTrain]))
-trainY = np.concatenate((trainY, legendY[:legendTrain]))
-trainX, trainY = shuffle_in_unison_scary(trainX, trainY)
-# ----------------------------------------------------------------------------------------------------
-# VALIDATION GROUP
-normValid = int(np.shape(normieX)[0]/2)
-validationX = normieX[normTrain:normValid+normTrain]
-validationY = normieY[normTrain:normValid+normTrain]
-
-legendValid = int(np.shape(legendX)[0]/4)
-validationX = np.concatenate((validationX, legendX[legendTrain:legendValid+legendTrain]))
-validationY = np.concatenate((validationY, legendY[legendTrain:legendValid+legendTrain]))
-validationX, validationY = shuffle_in_unison_scary(validationX, validationY)
-# ----------------------------------------------------------------------------------------------------
-# TESTING GROUP
-testingX = normieX[normValid+normTrain:]
-testingX = np.concatenate((testingX, legendX[legendValid+legendTrain:]))
-
-testingY = normieY[normValid+normTrain:]
-testingY = np.concatenate((testingY, legendY[legendValid+legendTrain:]))
-testingX, testingY = shuffle_in_unison_scary(testingX, testingY)
-# ----------------------------------------------------------------------------------------------------
-
+X, y, trainX, trainY, validationX, validationY, testingX, testingY = Data_Management.divide_legendary_groups(X, y)
 
 num_entradas = np.shape(X)[1]
 num_ocultas = 25
 num_etiquetas = 1
 true_score_max = float("-inf")
-
 
 thetaTrueMin1 = None
 thetaTrueMin2 = None
@@ -247,6 +196,6 @@ while True:
     user_values = np.reshape(user_values, (np.shape(user_values)[0], 1))
     user_values = np.transpose(user_values)
     sol = forward_propagate(user_values, thetaTrueMin1, thetaTrueMin2)[4]
-    print("Is your pokemon legendary?: " + sol > 0.7 + "\n")
+    print("Is your pokemon legendary?: " + str(sol[0, 0] > 0.7) + "\n")
 
 #print(check.checkNNGradients(backdrop, 0))
