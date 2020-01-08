@@ -5,3 +5,6 @@ Increiblemente, el numero de pasos para abrir el huevo y el capture rate increme
 Mejor aun, solo los pasos para abrir el huevo hace q el score sea de 0.8235
 Kernel lineal con capture rate y base_egg_steps score de 0.545, imagen en carpeta (todos los pokimons)
 con kernel gaussiano sale de 0.94 pero la imagen es extrañisima (todos los pokimons)
+
+No predice bien los pokimones q les introduzco, hay q normalizar los datos para el gaussiano o probar diferentes kernels, por ejemplo:
+lineal: useful when ‘n’ is large and ‘m’ is small
