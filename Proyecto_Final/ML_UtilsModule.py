@@ -151,27 +151,19 @@ class Normalization:
             new_value = (X[:, i] - mu[i])/sigma[i] #normalize
             X_norm[:, i] = new_value
 
+        mu = np.reshape(mu, (1, np.shape(mu)[0]))
+        sigma = np.reshape(sigma, (1, np.shape(sigma)[0]))
+
         return X_norm, mu, sigma
 
     @staticmethod
     def normalize(X, mu, sigma):
         """
-        Normalize the given matrix using the mean and deviation of every column (attribute).
-        Returns the normalized matrix, the mu vector (mean of every attribute) and sigma vector (deviation of every attribute).
+        Normalize a matrix using mu and sigma vectors obtained in a
+        previous normalization 
         """
-        n = np.shape(X)[1]
-        X_norm = np.empty_like(X)
-
-        for i in range(0, n):
-            new_value = (X[:, i] - mu[i])/sigma[i] #normalize
-            X_norm[:, i] = new_value
-
-        return X_norm
-
-    @staticmethod
-    def normalize2(X, mu, sigma):
         aux1 = X[:, :] - mu[0, :]
-        return aux1[:, :]/sigma[0, :]
+        return aux1[:, :] / sigma[0, :]
 
     @staticmethod
     def normalize_single_attributes(attributes, mu, sigma):

@@ -7,4 +7,4 @@ Kernel lineal con capture rate y base_egg_steps score de 0.545, imagen en carpet
 con kernel gaussiano sale de 0.94 pero la imagen es extrañisima (todos los pokimons)
 
 No predice bien los pokimones q les introduzco, hay q normalizar los datos para el gaussiano o probar diferentes kernels, por ejemplo:
-lineal: useful when ‘n’ is large and ‘m’ is small
+lineal: useful when ‘n’ is large and ‘m’ is small (DONE)
