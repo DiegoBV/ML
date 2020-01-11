@@ -1,5 +1,4 @@
-
--probar a normalizar
+- hacer la red con keras y el pintado
 
 - pintar graficas(X/Y):
 	-(capture rate / is legendary) ejemplos de entrenamiento y funcion de clasificacion

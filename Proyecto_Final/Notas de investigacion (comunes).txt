@@ -24,3 +24,8 @@ cayendo en minimos locales (yuju) que dan 0 en true positive (clasifican bien a 
 -Habiendo hecho el bucle de repeticion para tratar de sortear los minimos locales, hemos conseguido un true score de 0.8823529411764706 / 0.94 / 1.0 (o_O) con 
 ["attack", "defense", "hp", "sp_attack", "sp_defense", "speed", "capture_rate", "base_egg_steps"] y lambda 1
 -Con capture rate y base egg steps sale un score muy alto (0.973) y lambda 1
+
+// 11-01-2020
+-Normalizando los atributos el true score ha pasado a 0.875 (con num_tries)
+
+-los minimos locales parecen haberse reducido 
