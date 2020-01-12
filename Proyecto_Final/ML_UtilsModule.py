@@ -22,7 +22,7 @@ class Data_Management:
 
         dataFile = dataFile.drop(['abilities', 'classfication', 'japanese_name', 'name', 'type1', 'type2', 
                                   'against_bug', 'against_dark','against_dragon','against_electric','against_fairy','against_fight','against_fire','against_flying','against_ghost','against_grass','against_ground','against_ice','against_normal','against_poison','against_psychic','against_rock','against_steel','against_water',
-                                  'is_legendary'], axis =1).values
+                                  'is_legendary', 'generation', 'pokedex_number'], axis =1).values
     
         #dataFile = dataFile['capture_rate'].array
         

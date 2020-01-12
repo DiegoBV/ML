@@ -1,10 +1,14 @@
-- hacer la red con keras y el pintado
+-probar mas parametros con keras
+
+- clasificador de tipo en funcion de stats de batalla
+	- graficas en funcion de los stats con el tipo de pkm de colores
+
+-meter poligonos en redes neuronales
+
+-MEMORIA: comparar resultados entre svm, redes, keras
 
 - pintar graficas(X/Y):
 	-(capture rate / is legendary) ejemplos de entrenamiento y funcion de clasificacion
 
 
 - probar con las estadisticas de pkm de generaciones posteriores a la 7
-
-- clasificador de tipo en funcion de stats de batalla
-	- graficas en funcion de los stats con el tipo de pkm de colores

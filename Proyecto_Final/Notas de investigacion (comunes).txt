@@ -29,3 +29,6 @@ cayendo en minimos locales (yuju) que dan 0 en true positive (clasifican bien a 
 -Normalizando los atributos el true score ha pasado a 0.875 (con num_tries)
 
 -los minimos locales parecen haberse reducido 
+
+// 12-01-2020
+-pintando cosas con keras
