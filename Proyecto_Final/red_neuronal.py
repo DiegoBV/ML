@@ -143,26 +143,25 @@ def pintaTodo(X, y, error, errorTr, true_score):
     
     plt.show()
     
-def paint_graphic(X, y, true_score, theta1, theta2):
-        
-        plt.figure()
-        
-        pos = (y == 1).ravel()
-        neg = (y == 0).ravel()
-        plt.scatter(X[pos, 0], X[pos, 1], color='blue', marker='o', label = "Legendary")
-        plt.scatter(X[neg, 0], X[neg, 1], color='black', marker='x', label = "Non legendary")   
-        
-        x0_min, x0_max = X[:,0].min(), X[:,0].max()
-        x1_min, x1_max = X[:,1].min(), X[:,1].max()
-        xx1, xx2 = np.meshgrid(np.linspace(x0_min, x0_max), np.linspace(x1_min, x1_max))
-        
-        sigm = forward_propagate(np.c_[ xx1.ravel(), xx2.ravel()], theta1, theta2)[4]
-        sigm = np.reshape(sigm, np.shape(xx1))
-        plt.contour(xx1, xx2, sigm, [0.5], linewidths = 1, colors = 'g')
-        
-        plt.suptitle(("Score: " + str(true_score)))
-        
-        plt.show()
+def paint_graphic(X, y, true_score, theta1, theta2):     
+    plt.figure()
+    
+    pos = (y == 1).ravel()
+    neg = (y == 0).ravel()
+    plt.scatter(X[pos, 0], X[pos, 1], color='blue', marker='o', label = "Legendary")
+    plt.scatter(X[neg, 0], X[neg, 1], color='black', marker='x', label = "Non legendary")   
+    
+    x0_min, x0_max = X[:,0].min(), X[:,0].max()
+    x1_min, x1_max = X[:,1].min(), X[:,1].max()
+    xx1, xx2 = np.meshgrid(np.linspace(x0_min, x0_max), np.linspace(x1_min, x1_max))
+    
+    sigm = forward_propagate(np.c_[ xx1.ravel(), xx2.ravel()], theta1, theta2)[4]
+    sigm = np.reshape(sigm, np.shape(xx1))
+    plt.contour(xx1, xx2, sigm, [0.5], linewidths = 1, colors = 'g')
+    
+    plt.suptitle(("Score: " + str(true_score)))
+    
+    plt.show()
         
         
 X, y = Data_Management.load_csv_svm("pokemon.csv", ["base_total", "base_happiness"])
