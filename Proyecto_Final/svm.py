@@ -3,12 +3,14 @@ from sklearn.svm import SVC
 import numpy as np
 from ML_UtilsModule import Data_Management, Normalization
 from sklearn.metrics import confusion_matrix
+from mpl_toolkits.mplot3d import Axes3D
 
 NUM_TRIES = 1
 feature1 = "capture_rate"
 feature2 = "base_egg_steps"
+feature3 = "attack"
 
-def draw_decisition_boundary(X, y, svm, true_score, mu, sigma):
+def draw_decisition_boundary(X, y, svm, true_score, mu, sigma, c, s):
     """
     valid for two feature
     """
@@ -27,7 +29,7 @@ def draw_decisition_boundary(X, y, svm, true_score, mu, sigma):
     #formatting the graphic with some labels
     plt.xlabel(feature1)
     plt.ylabel(feature2)
-    plt.suptitle(("Score: " + str(true_score)))
+    plt.suptitle(("Score: " + str(float("{0:.3f}".format(true_score))) + "\n C: " + str(c) + "\n Sigma: " + str(s)))
     figure.legend()
 
     #set the labels to non-normalized values
@@ -45,12 +47,47 @@ def draw_decisition_boundary(X, y, svm, true_score, mu, sigma):
     #show
     plt.show()
 
+def draw_3D(X, y, svm, true_score, mu, sigma):
+    fig = plt.figure()
+    ax = Axes3D(fig)
+    
+    pos = (y == 1).ravel()
+    neg = (y == 0).ravel()
+    ax.scatter(X[pos, 0], X[pos, 1], X[pos, 2], color='blue', marker='o', label = "Legendary")
+    ax.scatter(X[neg, 0], X[neg, 1], X[neg, 2], color='red', marker='x', label = "Non Legendary")
+    plt.suptitle(("Score: " + str(true_score)))
+    fig.legend()
+
+    plt.xlabel(feature1)
+    plt.ylabel(feature2)
+    
+    plt.show()
+
+    # fig = plt.figure()
+    # ax = Axes3D(fig)
+    # x1 = np.linspace(X[:, 0].min(), X[:, 0].max(), 100)
+    # x2 = np.linspace(X[:, 1].min(), X[:, 1].max(), 100)
+    # x1, x2 = np.meshgrid(x1, x2)
+    # yp = svm.predict(np.array([x1.ravel(),x2.ravel()]).T).reshape(x1.shape)
+
+    # ax.plot_surface(x1, x2, yp)
+
+    # pos = (y == 1).ravel()
+    # neg = (y == 0).ravel()
+    # ax.scatter(X[pos, 0], X[pos, 1], color='blue', marker='o', label = "Legendary")
+    # ax.scatter(X[neg, 0], X[neg, 1], color='red', marker='x', label = "Non Legendary")
+
+    # plt.suptitle(("Score: " + str(true_score)))
+    # fig.legend()
+
+    # plt.show()
+
 def kernel_lineal(X, y, mu, sigma):
     svm = SVC(kernel='linear', C=1.0)
     svm.fit(X, y.ravel())
     score = true_score(X, y, svm)
 
-    draw_decisition_boundary(X, y, svm, score, mu, sigma)
+    #ssdraw_decisition_boundary(X, y, svm, score, mu, sigma, 1.0, "lineal")
 
     return svm
 
@@ -61,7 +98,7 @@ def kernel_gaussiano(X, y, mu, sigma):
     svm.fit(X, y.ravel())
     score = true_score(X, y, svm)
 
-    draw_decisition_boundary(X, y, svm, score, mu, sigma)
+    draw_decisition_boundary(X, y, svm, score, mu, sigma, 1, sigma)
 
     return svm
 
@@ -75,11 +112,13 @@ def true_score(X, y, svm):
         score = 2 * (precision_score * recall_score) / (precision_score + recall_score)
     return score
 
-def eleccion_parametros_C_y_Sigma(X, y, Xval, yval):
+def eleccion_parametros_C_y_Sigma(X, y, Xval, yval, mu, sigma):
     possible_values = [0.01, 0.03, 0.1, 0.3, 1, 3, 10, 30]
     C_value, sigma = 0, 0
     max_score = 0
     best_svm = None
+    selected_C = 0
+    selected_Sigma = 0
 
     for i in range(len(possible_values)):
         C_value = possible_values[i]
@@ -91,8 +130,10 @@ def eleccion_parametros_C_y_Sigma(X, y, Xval, yval):
             if current_score > max_score:
                 max_score = current_score
                 best_svm = svm
+                selected_C = C_value
+                selected_Sigma = sigma
     
-    return best_svm
+    return best_svm, selected_C, selected_Sigma
 
 X, y = Data_Management.load_csv_svm("pokemon.csv", [feature1, feature2])
 X, mu, sigma = Normalization.normalize_data_matrix(X)
@@ -104,9 +145,9 @@ best_svm = None
 for i in range(NUM_TRIES):
     #THIS IS GIVING THE SAME RESULT, ALWAYS (MAYBE SELECT C AND SIGMA RANDOMLY)
     seed = np.random.seed()
-    current_svm = eleccion_parametros_C_y_Sigma(trainX, trainY, validationX, validationY)
+    current_svm, C, s = eleccion_parametros_C_y_Sigma(trainX, trainY, validationX, validationY, mu, sigma)
     current_score = true_score(testingX, testingY, current_svm)
-    draw_decisition_boundary(testingX, testingY, current_svm, current_score, mu, sigma)
+    draw_decisition_boundary(testingX, testingY, current_svm, current_score, mu, sigma, C, s)
     print("Score con los ejemplos de testing: " + str(current_score))
     if current_score > max_score:
         max_score = current_score
