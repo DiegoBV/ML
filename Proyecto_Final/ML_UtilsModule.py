@@ -29,6 +29,77 @@ class Data_Management:
         return dataFile, y
     
     @staticmethod
+    def load_csv_types(file_name):
+        """
+        Load the csv file. Returns numpy array
+        """
+        dataFile = read_csv(file_name, header = 0)
+
+        against_types = ['against_bug', 'against_dark','against_dragon','against_electric',
+                         'against_fairy','against_fight','against_fire','against_flying',
+                         'against_ghost','against_grass','against_ground','against_ice','against_normal',
+                         'against_poison','against_psychic','against_rock','against_steel','against_water']
+        
+        types = ["grass", "water", "fire", "bug", "normal", "poison", "electric", 'flying', 'dark', 
+                 'dragon','ground', 'fairy', 'fighting', 'ghost', 'ice', 'steel', 'rock', 'psychic']
+        
+        dataFile = dataFile.fillna(0)
+        y = dataFile['type1'].array
+    
+        
+        ## TODO: forma vectorizada
+        for i in range(len(y)):
+            for j in range(len(types)):
+                if y[i] == types[j]:
+                    y[i] = j
+                    break  
+                 
+        y = np.array(y, dtype = int)
+        
+        dataFile = dataFile.drop(['abilities', 'classfication', 'japanese_name', 'name', 'type1', 'type2',
+                                  'generation', 'pokedex_number'], axis =1).values
+    
+        dataFile = np.array(dataFile)
+        
+        return dataFile, y
+    @staticmethod
+    def load_csv_types_features(file_name, features):
+        """
+        Load the csv file. Returns numpy array
+        """
+        dataFile = read_csv(file_name, header = 0)
+
+        types = ["grass", "water", "fire", "bug", "normal", "poison", "electric", 'flying', 'dark', 
+                 'dragon','ground', 'fairy', 'fighting', 'ghost', 'ice', 'steel', 'rock', 'psychic']
+        
+        dataFile = dataFile.fillna(0)
+        y = dataFile['type1'].array
+    
+        
+        ## TODO: forma vectorizada
+        for i in range(len(y)):
+            for j in range(len(types)):
+                if y[i] == types[j]:
+                    y[i] = j
+                    break  
+                 
+        y = np.array(y, dtype = int)
+
+        X = np.array([])
+        X = np.reshape(X, (len(y), 0))
+        for i in range(len(features)):
+            X = np.c_[X, dataFile[features[i]].array]
+        
+        #for i in range(len(X)):
+        #    for j in range(len(types)):
+        #        if X[i] == types[j]:
+        #            X[i] = j
+        #            break  
+        #X = np.array(X, dtype = int)
+        
+        return X, y
+    
+    @staticmethod
     def load_csv_RedNeuronalV01(file_name):
         """
         Load the csv file. Returns numpy array
