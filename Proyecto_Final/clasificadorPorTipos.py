@@ -38,6 +38,11 @@ def transform_y(y, num_etiquetas):
 
     return np.transpose(mask)
 
+def des_transform_y(y, num_etiquetas):
+    deTransY = np.where(y == 1)
+    return deTransY[1]
+    
+
 def divideRandomGroups(X, y):
 
     X, y = Data_Management.shuffle_in_unison_scary(X, y)
@@ -169,19 +174,44 @@ def pintaTodo(X, y, error, errorTr, true_score):
     
     plt.show()
     
-def paint_graphic(X, y, true_score, theta1, theta2):     
+def paint_pkmTypes(X, y, types = None):
+    '''
+    Creates plt figure and draws the pkms used as input by the first two values of X
+    and changes the color of them depending on the type
+    
+    X = attributes
+    y = list of types, deTransformed (from 0 to 17)
+    types = types that are going to be printed
+    '''
+    typesIndx = []
+    
+    if(types == None):
+        types = Data_Management.types_
+        # esto es para que meta los indices del 0 al 17, de los tipos completos, como no lo conseguia, he pasado
+        typesIndx = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17] 
+    else:
+        for t in range(len(types)):
+            typesIndx.append(Data_Management.types_.index(types[t]))
+        
+
+    colors = Data_Management.colors_
+    
+    for i in range(len(typesIndx)):
+        pos = (y == typesIndx[i]).ravel()
+        plt.scatter(X[pos, 0], X[pos, 1], color=colors[typesIndx[i]], marker='.', label = types[i])
+    
+    
+def paint_graphic(X, y, true_score, theta1, theta2):
     plt.figure()
     
-    pos = (y == 1).ravel()
-    neg = (y == 0).ravel()
-    plt.scatter(X[pos, 0], X[pos, 1], color='blue', marker='o', label = "Legendary")
-    plt.scatter(X[neg, 0], X[neg, 1], color='black', marker='x', label = "Non legendary")   
+    paint_pkmTypes(X, y)
     
     x0_min, x0_max = X[:,0].min(), X[:,0].max()
     x1_min, x1_max = X[:,1].min(), X[:,1].max()
     xx1, xx2 = np.meshgrid(np.linspace(x0_min, x0_max), np.linspace(x1_min, x1_max))
     
     sigm = forward_propagate(np.c_[ xx1.ravel(), xx2.ravel()], theta1, theta2)[4]
+    sigm = np.argmax(sigm, axis = 1) #coge el valor maximo sacado por el frw_Propagate
     sigm = np.reshape(sigm, np.shape(xx1))
     plt.contour(xx1, xx2, sigm, [0.5], linewidths = 1, colors = 'g')
     
@@ -190,7 +220,7 @@ def paint_graphic(X, y, true_score, theta1, theta2):
     plt.show()
         
         
-X, y = Data_Management.load_csv_types_features("pokemon.csv", ["defense", "attack"])
+X, y = Data_Management.load_csv_types_features("pokemon.csv", ["attack", "defense"])
 
 
 
@@ -250,7 +280,8 @@ for j in range(NUM_TRIES):
         thetaTrueMin2 = thetaMin2
         pintaTodo(testingX, testingY, auxErr, auxErrTr, true_score)
 
-paint_graphic(testingX, testingY, true_score_max, thetaTrueMin1, thetaTrueMin2);
+deTransTestY = des_transform_y(testingY, num_etiquetas);
+paint_graphic(testingX, deTransTestY, true_score_max, thetaTrueMin1, thetaTrueMin2);
 
 print("True Score de la red neuronal: " + str(true_score_max) + "\n")
 while True:
