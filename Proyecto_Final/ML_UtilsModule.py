@@ -6,6 +6,11 @@ from matplotlib import pyplot as plt
                
 
 class Data_Management:
+    types_ = []
+
+    @staticmethod
+    def getTypeByIndex(index):
+        return Data_Management.types_[index]
 
     @staticmethod
     def load_csv(file_name):
@@ -40,7 +45,7 @@ class Data_Management:
                          'against_ghost','against_grass','against_ground','against_ice','against_normal',
                          'against_poison','against_psychic','against_rock','against_steel','against_water']
         
-        types = ["grass", "water", "fire", "bug", "normal", "poison", "electric", 'flying', 'dark', 
+        Data_Management.types_ = ["grass", "water", "fire", "bug", "normal", "poison", "electric", 'flying', 'dark', 
                  'dragon','ground', 'fairy', 'fighting', 'ghost', 'ice', 'steel', 'rock', 'psychic']
         
         dataFile = dataFile.fillna(0)
@@ -49,8 +54,8 @@ class Data_Management:
         
         ## TODO: forma vectorizada
         for i in range(len(y)):
-            for j in range(len(types)):
-                if y[i] == types[j]:
+            for j in range(len(Data_Management.types_)):
+                if y[i] == Data_Management.types_[j]:
                     y[i] = j
                     break  
                  
@@ -69,7 +74,7 @@ class Data_Management:
         """
         dataFile = read_csv(file_name, header = 0)
 
-        types = ["grass", "water", "fire", "bug", "normal", "poison", "electric", "flying", "dark", 
+        Data_Management.types_ = ["grass", "water", "fire", "bug", "normal", "poison", "electric", "flying", "dark", 
                  "dragon","ground", "fairy", "fighting", "ghost", "ice", "steel", "rock", "psychic"]
         
         dataFile = dataFile.fillna(0)
@@ -78,14 +83,14 @@ class Data_Management:
         
         ## TODO: forma vectorizada
         for i in range(len(y)):
-            for j in range(len(types)):
-                if y[i] == types[j]:
+            for j in range(len(Data_Management.types_)):
+                if y[i] == Data_Management.types_[j]:
                     y[i] = j
                     break  
                  
         y = np.array(y, dtype = int)
 
-        X = np.array([])
+        X = np.array([], dtype=float)
         X = np.reshape(X, (len(y), 0))
         for i in range(len(features)):
             X = np.c_[X, dataFile[features[i]].array]

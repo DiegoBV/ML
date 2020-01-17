@@ -4,13 +4,15 @@ import numpy as np
 from ML_UtilsModule import Data_Management, Normalization
 from sklearn.metrics import confusion_matrix
 from mpl_toolkits.mplot3d import Axes3D
+from sklearn.preprocessing import PolynomialFeatures as pf
 
 NUM_TRIES = 1
 feature1 = "against_bug"
 feature2 = "against_dragon"
 feature3 = "attack"
+grado = 2
 
-def draw_decisition_boundary(X, y, svm, true_score, mu, sigma, c, s):
+def draw_decisition_boundary(X, y, svm, true_score, mu, sigma, c, s, type):
     """
     valid for two feature
     """
@@ -22,8 +24,8 @@ def draw_decisition_boundary(X, y, svm, true_score, mu, sigma, c, s):
     yp = svm.predict(np.array([x1.ravel(),x2.ravel()]).T).reshape(x1.shape)
     pos = (y == 1).ravel()
     neg = (y == 0).ravel()
-    plt.scatter(X[pos, 0], X[pos, 1], color='blue', marker='o', label = "Tipo buscado")
-    plt.scatter(X[neg, 0], X[neg, 1], color='black', marker='x', label = "No tipo buscado")
+    plt.scatter(X[pos, 0], X[pos, 1], color='blue', marker='o', label = type)
+    plt.scatter(X[neg, 0], X[neg, 1], color='black', marker='x', label = "Other types")
     plt.contour(x1, x2, yp, colors=['red', 'purple'])
 
     #formatting the graphic with some labels
@@ -33,16 +35,16 @@ def draw_decisition_boundary(X, y, svm, true_score, mu, sigma, c, s):
     figure.legend()
 
     #set the labels to non-normalized values
-    figure.canvas.draw()
-    labels = [item for item in plt.xticks()[0]]
-    for i in range(len(labels)):
-        labels[i] = int(round((labels[i] * sigma[0, 0]) + mu[0, 0], -1))
-    ax.xaxis.set_ticklabels(labels)
+    # figure.canvas.draw()
+    # labels = [item for item in plt.xticks()[0]]
+    # for i in range(len(labels)):
+    #     labels[i] = int(round((labels[i] * sigma[0, 0]) + mu[0, 0], -1))
+    # ax.xaxis.set_ticklabels(labels)
 
-    labels = [item for item in plt.yticks()[0]]
-    for i in range(len(labels)):
-        labels[i] = int(round((labels[i] * sigma[0, 1]) + mu[0, 1], -1))
-    ax.yaxis.set_ticklabels(labels)
+    # labels = [item for item in plt.yticks()[0]]
+    # for i in range(len(labels)):
+    #     labels[i] = int(round((labels[i] * sigma[0, 1]) + mu[0, 1], -1))
+    # ax.yaxis.set_ticklabels(labels)
 
     #show
     plt.show()
@@ -81,26 +83,6 @@ def draw_3D(X, y, svm, true_score, mu, sigma):
     # fig.legend()
 
     # plt.show()
-
-def kernel_lineal(X, y, mu, sigma):
-    svm = SVC(kernel='linear', C=1.0)
-    svm.fit(X, y.ravel())
-    score = true_score(X, y, svm)
-
-    #ssdraw_decisition_boundary(X, y, svm, score, mu, sigma, 1.0, "lineal")
-
-    return svm
-
-def kernel_gaussiano(X, y, mu, sigma):
-    sigma = 0.1
-
-    svm = SVC(kernel = 'rbf' , C= 1, gamma= (1 / ( 2 * sigma ** 2)) )
-    svm.fit(X, y.ravel())
-    score = true_score(X, y, svm)
-
-    draw_decisition_boundary(X, y, svm, score, mu, sigma, 1, sigma)
-
-    return svm
 
 def true_score(X, y, svm):
     predicted_y = svm.predict(X)
@@ -193,8 +175,23 @@ def predict_type(user_values, svms):
     return max_security, predicted_type
 
 
-X, y = Data_Management.load_csv_types_features("pokemon.csv", [feature1, feature2, "against_fairy", "against_ice", "against_water", "against_dark"])
-X, mu, sigma = Normalization.normalize_data_matrix(X)
+def polynomial_features(X, grado):
+    poly = pf(grado)
+    return (poly.fit_transform(X))
+
+# X, y = Data_Management.load_csv_types_features("pokemon.csv",['against_bug', 'against_dark','against_dragon','against_electric',
+#                          'against_fairy','against_fight','against_fire','against_flying',
+#                          'against_ghost','against_grass','against_ground','against_ice','against_normal',
+#                          'against_poison','against_psychic','against_rock','against_steel','against_water'])
+
+X, y = Data_Management.load_csv_types_features("pokemon.csv", ["hp", "attack", "defense", "sp_attack", "sp_defense","speed", "height_m", "weight_kg"])
+# TODO: usar el tipo2 para sacar el score tambien (si mi svm predice 1 y una de las dos y es 1, es truePositive++) y dar el resultado con solo 
+# 1 tipo, todo lo del entrenamiento se queda igual (se entrena para un solo tipo). Luego en el score se hace eso y para predecir el tipo se queda igual.
+# Tambien puedo sacar dos svm, tipo primario y tipo secundario pero mas lio ?
+
+
+X = polynomial_features(X, grado)
+X, mu, sigma = Normalization.normalize_data_matrix(X[:, 1:])
 
 trainX, trainY, validationX, validationY, testingX, testingY = divideRandomGroups(X, y)
 
@@ -206,9 +203,10 @@ for j in range(18):
     currentTestingY = (testingY == j) * 1
     current_svm, C, s = eleccion_parametros_C_y_Sigma(trainX, currentTrainY, validationX, currentValidationY, mu, sigma)
     current_score = true_score(testingX, currentTestingY, current_svm)
-    #ssdraw_decisition_boundary(testingX, currentTestingY, current_svm, current_score, mu, sigma, C, s)
+    if np.shape(trainX)[1] == 2:
+        draw_decisition_boundary(testingX, currentTestingY, current_svm, current_score, mu, sigma, C, s, Data_Management.getTypeByIndex(j))
     svms.append(current_svm)
-    print("Score con los ejemplos de testing: " + str(current_score) + " Type: " + str(j))
+    print("Score con los ejemplos de testing: " + str(current_score) + " Type: " + Data_Management.getTypeByIndex(j))
 
 while True:
     user_values = np.array(list(map(float, input("Gimme stats: ").split())), dtype=float) # (features, )
@@ -216,6 +214,7 @@ while True:
         break
     user_values = np.reshape(user_values, (np.shape(user_values)[0], 1))
     user_values = np.transpose(user_values)
-    user_values = Normalization.normalize(user_values, mu, sigma) #normalization of user values
+    user_values = polynomial_features(user_values, grado)
+    user_values = Normalization.normalize(user_values[:, 1:], mu, sigma) #normalization of user values
     sec, pokemon_type = predict_type(user_values, svms)
-    print("Predicted type: " + str(pokemon_type) + " Probability of that type: " + str(sec) + "\n")
+    print("Predicted type: " + Data_Management.getTypeByIndex(pokemon_type) + ". Probability of that type: " + str(sec) + "\n")
