@@ -69,8 +69,8 @@ class Data_Management:
         """
         dataFile = read_csv(file_name, header = 0)
 
-        types = ["grass", "water", "fire", "bug", "normal", "poison", "electric", 'flying', 'dark', 
-                 'dragon','ground', 'fairy', 'fighting', 'ghost', 'ice', 'steel', 'rock', 'psychic']
+        types = ["grass", "water", "fire", "bug", "normal", "poison", "electric", "flying", "dark", 
+                 "dragon","ground", "fairy", "fighting", "ghost", "ice", "steel", "rock", "psychic"]
         
         dataFile = dataFile.fillna(0)
         y = dataFile['type1'].array

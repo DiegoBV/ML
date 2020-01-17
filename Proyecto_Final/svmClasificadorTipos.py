@@ -6,8 +6,8 @@ from sklearn.metrics import confusion_matrix
 from mpl_toolkits.mplot3d import Axes3D
 
 NUM_TRIES = 1
-feature1 = "capture_rate"
-feature2 = "base_egg_steps"
+feature1 = "against_bug"
+feature2 = "against_dragon"
 feature3 = "attack"
 
 def draw_decisition_boundary(X, y, svm, true_score, mu, sigma, c, s):
@@ -22,8 +22,8 @@ def draw_decisition_boundary(X, y, svm, true_score, mu, sigma, c, s):
     yp = svm.predict(np.array([x1.ravel(),x2.ravel()]).T).reshape(x1.shape)
     pos = (y == 1).ravel()
     neg = (y == 0).ravel()
-    plt.scatter(X[pos, 0], X[pos, 1], color='blue', marker='o', label = "Legendary")
-    plt.scatter(X[neg, 0], X[neg, 1], color='black', marker='x', label = "Non legendary")
+    plt.scatter(X[pos, 0], X[pos, 1], color='blue', marker='o', label = "Tipo buscado")
+    plt.scatter(X[neg, 0], X[neg, 1], color='black', marker='x', label = "No tipo buscado")
     plt.contour(x1, x2, yp, colors=['red', 'purple'])
 
     #formatting the graphic with some labels
@@ -104,18 +104,30 @@ def kernel_gaussiano(X, y, mu, sigma):
 
 def true_score(X, y, svm):
     predicted_y = svm.predict(X)
-    tn, fp, fn, tp = confusion_matrix(y, predicted_y).ravel()
+    tp = 0
+    fp = 0
+    fn = 0
+    
+    for i in range(np.shape(predicted_y)[0]):
+        if predicted_y[i] == 1 and y[i] == 1:
+            tp += 1
+        elif predicted_y[i] == 1 and y[i] == 0:
+            fp += 1
+        elif predicted_y[i] == 0 and y[i] == 1:
+            fn += 1    
+
     score = 0
     if tp != 0:
         precision_score = tp / (tp + fp)
         recall_score = tp / (tp + fn)
         score = 2 * (precision_score * recall_score) / (precision_score + recall_score)
+
     return score
 
 def eleccion_parametros_C_y_Sigma(X, y, Xval, yval, mu, sigma):
     possible_values = [0.01, 0.03, 0.1, 0.3, 1, 3, 10, 30]
     C_value, sigma = 0, 0
-    max_score = 0
+    max_score = float("-inf")
     best_svm = None
     selected_C = 0
     selected_Sigma = 0
@@ -124,7 +136,7 @@ def eleccion_parametros_C_y_Sigma(X, y, Xval, yval, mu, sigma):
         C_value = possible_values[i]
         for j in range(len(possible_values)):
             sigma = possible_values[j]
-            svm = SVC(kernel = 'rbf' , C = C_value, gamma= (1 / ( 2 * sigma ** 2)))
+            svm = SVC(kernel = 'rbf' , C = C_value, gamma= (1 / ( 2 * sigma ** 2)), probability=True)
             svm.fit(X, y.ravel())
             current_score = true_score(Xval, yval, svm) #calcula el score con los ejemplos de validacion (mayor score, mejor es el svm)
             if current_score > max_score:
@@ -135,23 +147,68 @@ def eleccion_parametros_C_y_Sigma(X, y, Xval, yval, mu, sigma):
     
     return best_svm, selected_C, selected_Sigma
 
-X, y = Data_Management.load_csv_svm("pokemon.csv", [feature1, feature2])
+def transform_y(y, num_etiquetas):
+    y = np.reshape(y, (np.shape(y)[0], 1))
+    mask = np.empty((num_etiquetas, np.shape(y)[0]), dtype=bool)
+    for i in range( num_etiquetas):
+        mask[i, :] = (y[:, 0] == i) 
+    
+    mask = mask * 1
+
+    return np.transpose(mask)
+
+def divideRandomGroups(X, y):
+    X, y = Data_Management.shuffle_in_unison_scary(X, y)
+    # ----------------------------------------------------------------------------------------------------
+    percent_train = 0.6
+    percent_valid = 0.2
+    percent_test = 0.2
+    # ----------------------------------------------------------------------------------------------------
+    # TRAINIG GROUP
+    t = int(np.shape(X)[0]*percent_train)
+    trainX = X[:t]
+    trainY= y[:t]
+    # ----------------------------------------------------------------------------------------------------
+    # VALIDATION GROUP
+    v=int( np.shape(trainX)[0]+np.shape(X)[0]*percent_valid)
+    validationX = X[np.shape(trainX)[0] : v]
+    validationY= y[np.shape(trainY)[0] : v]
+    # ----------------------------------------------------------------------------------------------------
+    # TESTING GROUP
+    testingX = X[np.shape(trainX)[0]+np.shape(validationX)[0] :]
+    testingY= y[np.shape(trainY)[0]+np.shape(validationY)[0] :]
+        
+    return trainX, trainY, validationX, validationY, testingX, testingY
+
+def predict_type(user_values, svms):
+    max_security = float("-inf")
+    predicted_type = 0
+
+    for i in range(len(svms)):
+        sec = svms[i].predict_proba(user_values)
+        if sec[0, 1] > max_security:
+            max_security = sec[0, 1]
+            predicted_type = i
+
+    return max_security, predicted_type
+
+
+X, y = Data_Management.load_csv_types_features("pokemon.csv", [feature1, feature2, "against_fairy", "against_ice", "against_water", "against_dark"])
 X, mu, sigma = Normalization.normalize_data_matrix(X)
-X, y, trainX, trainY, validationX, validationY, testingX, testingY = Data_Management.divide_legendary_groups(X, y)
 
-max_score = float("-inf")
-best_svm = None
+trainX, trainY, validationX, validationY, testingX, testingY = divideRandomGroups(X, y)
 
-for i in range(NUM_TRIES):
-    #THIS IS GIVING THE SAME RESULT, ALWAYS (MAYBE SELECT C AND SIGMA RANDOMLY)
-    seed = np.random.seed()
-    current_svm, C, s = eleccion_parametros_C_y_Sigma(trainX, trainY, validationX, validationY, mu, sigma)
-    current_score = true_score(testingX, testingY, current_svm)
-    draw_decisition_boundary(testingX, testingY, current_svm, current_score, mu, sigma, C, s)
-    print("Score con los ejemplos de testing: " + str(current_score))
-    if current_score > max_score:
-        max_score = current_score
-        best_svm = current_svm
+svms = []
+
+for j in range(18):
+    currentTrainY = (trainY == j) * 1
+    currentValidationY = (validationY == j) * 1
+    currentTestingY = (testingY == j) * 1
+    current_svm, C, s = eleccion_parametros_C_y_Sigma(trainX, currentTrainY, validationX, currentValidationY, mu, sigma)
+    current_score = true_score(testingX, currentTestingY, current_svm)
+    #ssdraw_decisition_boundary(testingX, currentTestingY, current_svm, current_score, mu, sigma, C, s)
+    svms.append(current_svm)
+    print("Score con los ejemplos de testing: " + str(current_score) + " Type: " + str(j))
 
 while True:
     user_values = np.array(list(map(float, input("Gimme stats: ").split())), dtype=float) # (features, )
@@ -160,5 +217,5 @@ while True:
     user_values = np.reshape(user_values, (np.shape(user_values)[0], 1))
     user_values = np.transpose(user_values)
     user_values = Normalization.normalize(user_values, mu, sigma) #normalization of user values
-    sol = best_svm.predict(user_values)
-    print("Is your pokemon legendary?: " + str(sol[0] == 1.0) + "\n")
+    sec, pokemon_type = predict_type(user_values, svms)
+    print("Predicted type: " + str(pokemon_type) + " Probability of that type: " + str(sec) + "\n")
