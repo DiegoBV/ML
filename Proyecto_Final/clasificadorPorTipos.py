@@ -201,10 +201,10 @@ def paint_pkmTypes(X, y, types = None):
         plt.scatter(X[pos, 0], X[pos, 1], color=colors[typesIndx[i]], marker='.', label = types[i])
     
     
-def paint_graphic(X, y, true_score, theta1, theta2):
+def paint_graphic(X, y, true_score, theta1, theta2, types = None):
     plt.figure()
     
-    paint_pkmTypes(X, y)
+    paint_pkmTypes(X, y, types)
     
     x0_min, x0_max = X[:,0].min(), X[:,0].max()
     x1_min, x1_max = X[:,1].min(), X[:,1].max()
@@ -281,7 +281,7 @@ for j in range(NUM_TRIES):
         pintaTodo(testingX, testingY, auxErr, auxErrTr, true_score)
 
 deTransTestY = des_transform_y(testingY, num_etiquetas);
-paint_graphic(testingX, deTransTestY, true_score_max, thetaTrueMin1, thetaTrueMin2);
+paint_graphic(testingX, deTransTestY, true_score_max, thetaTrueMin1, thetaTrueMin2, ['fire']);
 
 print("True Score de la red neuronal: " + str(true_score_max) + "\n")
 while True:
