@@ -1,0 +1,6 @@
+REGRESION LOGISTICA (LEGENDARIES):
+
+// 18-01-2020
+ -solo probado con variables de 2 en 2, no parece haber clara division a priori
+ -los mejores resultados se obtienen por lo general entre lo testeado, con polinomio de grado 1 (regresion
+lineal).
