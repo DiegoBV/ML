@@ -7,8 +7,8 @@ from mpl_toolkits.mplot3d import Axes3D
 from sklearn.preprocessing import PolynomialFeatures as pf
 
 NUM_TRIES = 1
-feature1 = "against_bug"
-feature2 = "against_dragon"
+feature1 = "against_electric"
+feature2 = "against_grass"
 feature3 = "attack"
 grado = 2
 
@@ -184,14 +184,15 @@ def polynomial_features(X, grado):
 #                          'against_ghost','against_grass','against_ground','against_ice','against_normal',
 #                          'against_poison','against_psychic','against_rock','against_steel','against_water'])
 
-X, y = Data_Management.load_csv_types_features("pokemon.csv", ["hp", "attack", "defense", "sp_attack", "sp_defense","speed", "height_m", "weight_kg"])
+X, y = Data_Management.load_csv_types_features("pokemon.csv", [feature1, feature2])
 # TODO: usar el tipo2 para sacar el score tambien (si mi svm predice 1 y una de las dos y es 1, es truePositive++) y dar el resultado con solo 
 # 1 tipo, todo lo del entrenamiento se queda igual (se entrena para un solo tipo). Luego en el score se hace eso y para predecir el tipo se queda igual.
 # Tambien puedo sacar dos svm, tipo primario y tipo secundario pero mas lio ?
 
 
-X = polynomial_features(X, grado)
-X, mu, sigma = Normalization.normalize_data_matrix(X[:, 1:])
+#X = polynomial_features(X, grado)
+X, mu, sigma = Normalization.normalize_data_matrix(X)
+#X = Data_Management.add_column_left_of_matrix(X)
 
 trainX, trainY, validationX, validationY, testingX, testingY = divideRandomGroups(X, y)
 
