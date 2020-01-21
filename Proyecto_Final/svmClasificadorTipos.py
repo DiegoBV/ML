@@ -192,6 +192,7 @@ X, y = Data_Management.load_csv_types_features("pokemon.csv", ["hp", "attack", "
 
 X = polynomial_features(X, grado)
 X, mu, sigma = Normalization.normalize_data_matrix(X[:, 1:])
+X = Data_Management.add_column_left_of_matrix(X)
 
 trainX, trainY, validationX, validationY, testingX, testingY = divideRandomGroups(X, y)
 

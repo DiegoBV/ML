@@ -250,7 +250,7 @@ for j in range(NUM_TRIES):
         thetaTrueMin2 = thetaMin2
         pintaTodo(testingX, testingY, auxErr, auxErrTr, true_score)
 
-paint_graphic(testingX, testingY, true_score_max, thetaTrueMin1, thetaTrueMin2);
+paint_graphic(testingX, testingY, true_score_max, thetaTrueMin1, thetaTrueMin2)
 
 print("True Score de la red neuronal: " + str(true_score_max) + "\n")
 while True:
