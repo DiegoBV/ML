@@ -59,7 +59,7 @@ class prediction_history(Callback):
         self.epoch_count=epoch_count
         self.count=count
     def on_epoch_end(self,epoch,logs={}):
-        if self.epoch_count%5==0:
+        if self.epoch_count%100==0 or self.epoch_count==399:
             plot_decision_boundary(X, y, model,self.epoch_count,self.count,cmap='RdBu')
             score, acc = model.evaluate(X, y, verbose=0)
             print("error " + str(score) + ", accuracy " + str(acc))
@@ -71,7 +71,7 @@ class prediction_history(Callback):
 
 if __name__ == "__main__":
     X, y = datasets.make_moons(n_samples=1000, noise=0.1, random_state=0)
-    X, y = Data_Management.load_csv_svm("pokemon.csv", ['attack', 'defense'])
+    X, y = Data_Management.load_csv_svm("pokemon.csv", ['weight_kg', 'height_m'])
     
     X, y, trainX, trainY, validationX, validationY, testingX, testingY = Data_Management.divide_legendary_groups(X, y)
     
@@ -90,6 +90,6 @@ if __name__ == "__main__":
     # Compile model
     model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
     predictions=prediction_history()
-    history = model.fit(X, y, validation_split = 0.1, verbose=0,epochs=10, shuffle=True,callbacks=[predictions])
+    history = model.fit(X, y, validation_split = 0.1, verbose=0,epochs=400, shuffle=True,callbacks=[predictions])
     
     plot_loss_accuracy(history)

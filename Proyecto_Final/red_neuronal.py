@@ -183,8 +183,8 @@ def paint_graphic(X, y, true_score, theta1, theta2, mu, sigma):
     plt.show()
         
         
-X, y = Data_Management.load_csv_svm("pokemon.csv", ["weight_kg", "speed"])
-nX, ny, ntrainX, ntrainY, nvalidationX, nvalidationY, ntestingX, ntestingY = Data_Management.divide_legendary_groups(X, y)
+X, y = Data_Management.load_csv_svm("pokemon.csv", ["base_egg_steps", "base_happiness"])
+
 #normalize
 p, X = polinomial_features(X, 5)
 X, mu, sigma = Normalization.normalize_data_matrix(X[:, 1:])

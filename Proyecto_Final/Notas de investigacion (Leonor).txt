@@ -4,3 +4,9 @@ REGRESION LOGISTICA (LEGENDARIES):
  -solo probado con variables de 2 en 2, no parece haber clara division a priori
  -los mejores resultados se obtienen por lo general entre lo testeado, con polinomio de grado 1 (regresion
 lineal).
+
+// 20-01-2020
+ -en polinomios altos (4<~) las thetas con tnc se minimizan a pesos de 0 y mas adelante dan divisiones entre 0
+ -parece que las mejores opciones es lineal
+
+// 21-01-2020
