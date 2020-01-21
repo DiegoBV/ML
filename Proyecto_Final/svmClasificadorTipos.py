@@ -7,8 +7,8 @@ from mpl_toolkits.mplot3d import Axes3D
 from sklearn.preprocessing import PolynomialFeatures as pf
 
 NUM_TRIES = 1
-feature1 = "against_electric"
-feature2 = "against_grass"
+feature1 = "attack"
+feature2 = "defense"
 feature3 = "attack"
 grado = 2
 

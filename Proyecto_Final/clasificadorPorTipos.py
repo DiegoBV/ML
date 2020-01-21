@@ -210,19 +210,25 @@ def paint_graphic(X, y, true_score, theta1, theta2, types = None):
     x1_min, x1_max = X[:,1].min(), X[:,1].max()
     xx1, xx2 = np.meshgrid(np.linspace(x0_min, x0_max), np.linspace(x1_min, x1_max))
 
-    sigm = forward_propagate(np.c_[ xx1.ravel(), xx2.ravel()], theta1, theta2)[4]
-    sigm = np.argmax(sigm, axis = 1) #coge el valor maximo sacado por el frw_Propagate
+    aux = np.c_[ xx1.ravel(), xx2.ravel()]
+    #p, aux = polinomial_features(aux, 5)
+    aux = Normalization.normalize(aux, mu, sigma)
+    sigm = forward_propagate(aux, theta1, theta2)[4]
+    sigm = sigm[:, 1] #coge el valor maximo sacado por el frw_Propagate
+    # for i in range(18):
     sigm = np.reshape(sigm, np.shape(xx1))
-    plt.contour(xx1, xx2, sigm, [0.5], linewidths = 1, colors = 'g')
+    plt.contour(xx1, xx2, sigm, [0.5], linewidths = 1, colors ='g')
 
     plt.suptitle(("Score: " + str(true_score)))
-
     plt.show()
 
 
-X, y = Data_Management.load_csv_types_features("pokemon.csv", ["attack", "defense"])
+
+X, y = Data_Management.load_csv_types_features("pokemon.csv", ["percentage_male", "sp_attack"])
 
 
+#p, X = polinomial_features(X, 5)
+X, mu, sigma = Normalization.normalize_data_matrix(X)
 
 #normalize
 #X, mu, sigma = Normalization.normalize_data_matrix(X)
@@ -280,8 +286,11 @@ for j in range(NUM_TRIES):
         thetaTrueMin2 = thetaMin2
         pintaTodo(testingX, testingY, auxErr, auxErrTr, true_score)
 
-deTransTestY = des_transform_y(testingY, num_etiquetas);
-paint_graphic(testingX, deTransTestY, true_score_max, thetaTrueMin1, thetaTrueMin2, ['fire']);
+deTransTestY = des_transform_y(testingY, num_etiquetas)
+paint_graphic(testingX, deTransTestY, true_score_max, thetaTrueMin1, thetaTrueMin2, Data_Management.types_)
+paint_graphic(testingX, deTransTestY, true_score_max, thetaTrueMin1, thetaTrueMin2, ['grass'])
+paint_graphic(testingX, deTransTestY, true_score_max, thetaTrueMin1, thetaTrueMin2, ['water'])
+paint_graphic(testingX, deTransTestY, true_score_max, thetaTrueMin1, thetaTrueMin2, ['ghost'])
 
 print("True Score de la red neuronal: " + str(true_score_max) + "\n")
 while True:
