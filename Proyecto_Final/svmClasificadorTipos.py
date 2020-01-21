@@ -7,8 +7,8 @@ from mpl_toolkits.mplot3d import Axes3D
 from sklearn.preprocessing import PolynomialFeatures as pf
 
 NUM_TRIES = 1
-feature1 = "against_bug"
-feature2 = "against_dragon"
+feature1 = "against_electric"
+feature2 = "against_grass"
 feature3 = "attack"
 grado = 2
 
@@ -52,7 +52,7 @@ def draw_decisition_boundary(X, y, svm, true_score, mu, sigma, c, s, type):
 def draw_3D(X, y, svm, true_score, mu, sigma):
     fig = plt.figure()
     ax = Axes3D(fig)
-    
+
     pos = (y == 1).ravel()
     neg = (y == 0).ravel()
     ax.scatter(X[pos, 0], X[pos, 1], X[pos, 2], color='blue', marker='o', label = "Legendary")
@@ -62,7 +62,7 @@ def draw_3D(X, y, svm, true_score, mu, sigma):
 
     plt.xlabel(feature1)
     plt.ylabel(feature2)
-    
+
     plt.show()
 
     # fig = plt.figure()
@@ -89,14 +89,14 @@ def true_score(X, y, svm):
     tp = 0
     fp = 0
     fn = 0
-    
+
     for i in range(np.shape(predicted_y)[0]):
         if predicted_y[i] == 1 and y[i] == 1:
             tp += 1
         elif predicted_y[i] == 1 and y[i] == 0:
             fp += 1
         elif predicted_y[i] == 0 and y[i] == 1:
-            fn += 1    
+            fn += 1
 
     score = 0
     if tp != 0:
@@ -126,15 +126,15 @@ def eleccion_parametros_C_y_Sigma(X, y, Xval, yval, mu, sigma):
                 best_svm = svm
                 selected_C = C_value
                 selected_Sigma = sigma
-    
+
     return best_svm, selected_C, selected_Sigma
 
 def transform_y(y, num_etiquetas):
     y = np.reshape(y, (np.shape(y)[0], 1))
     mask = np.empty((num_etiquetas, np.shape(y)[0]), dtype=bool)
     for i in range( num_etiquetas):
-        mask[i, :] = (y[:, 0] == i) 
-    
+        mask[i, :] = (y[:, 0] == i)
+
     mask = mask * 1
 
     return np.transpose(mask)
@@ -159,7 +159,7 @@ def divideRandomGroups(X, y):
     # TESTING GROUP
     testingX = X[np.shape(trainX)[0]+np.shape(validationX)[0] :]
     testingY= y[np.shape(trainY)[0]+np.shape(validationY)[0] :]
-        
+
     return trainX, trainY, validationX, validationY, testingX, testingY
 
 def predict_type(user_values, svms):
@@ -184,8 +184,8 @@ def polynomial_features(X, grado):
 #                          'against_ghost','against_grass','against_ground','against_ice','against_normal',
 #                          'against_poison','against_psychic','against_rock','against_steel','against_water'])
 
-X, y = Data_Management.load_csv_types_features("pokemon.csv", ["hp", "attack", "defense", "sp_attack", "sp_defense","speed", "height_m", "weight_kg"])
-# TODO: usar el tipo2 para sacar el score tambien (si mi svm predice 1 y una de las dos y es 1, es truePositive++) y dar el resultado con solo 
+X, y = Data_Management.load_csv_types_features("pokemon.csv", [feature1, feature2])
+# TODO: usar el tipo2 para sacar el score tambien (si mi svm predice 1 y una de las dos y es 1, es truePositive++) y dar el resultado con solo
 # 1 tipo, todo lo del entrenamiento se queda igual (se entrena para un solo tipo). Luego en el score se hace eso y para predecir el tipo se queda igual.
 # Tambien puedo sacar dos svm, tipo primario y tipo secundario pero mas lio ?
 

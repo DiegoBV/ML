@@ -25,18 +25,23 @@ def polinomial_features(X, grado):
 
 def pesos_aleat(L_in, L_out):
     pesos = np.random.uniform(-0.12, 0.12, (L_out, 1+L_in))
-    
+
     return pesos
 
 def transform_y(y, num_etiquetas):
     y = np.reshape(y, (np.shape(y)[0], 1))
     mask = np.empty((num_etiquetas, np.shape(y)[0]), dtype=bool)
     for i in range( num_etiquetas):
-        mask[i, :] = (y[:, 0] == i) 
-    
+        mask[i, :] = (y[:, 0] == i)
+
     mask = mask * 1
 
     return np.transpose(mask)
+
+def des_transform_y(y, num_etiquetas):
+    deTransY = np.where(y == 1)
+    return deTransY[1]
+
 
 def divideRandomGroups(X, y):
 
@@ -59,7 +64,7 @@ def divideRandomGroups(X, y):
     # TESTING GROUP
     testingX = X[np.shape(trainX)[0]+np.shape(validationX)[0] :]
     testingY= y[np.shape(trainY)[0]+np.shape(validationY)[0] :]
-        
+
     return trainX, trainY, validationX, validationY, testingX, testingY
 
 
@@ -83,24 +88,24 @@ def forward_propagate(X, theta1, theta2):
 
 def propagation(a1, theta1, theta2):
     a1 = Data_Management.add_column_left_of_matrix(a1)
-    a2 = g(np.dot(a1, np.transpose(theta1)))      
+    a2 = g(np.dot(a1, np.transpose(theta1)))
     a2 = Data_Management.add_column_left_of_matrix(a2)
-    
+
     a3 = g(np.dot(a2, np.transpose(theta2)))
-    
+
     return a1, a2, a3
 
 def backdrop(params_rn, num_entradas, num_ocultas, num_etiquetas, X, y, reg):
     """
     return coste y gradiente de una red neuronal de dos capas
     """
-    theta1 = np.reshape(params_rn[:num_ocultas*(num_entradas + 1)], 
+    theta1 = np.reshape(params_rn[:num_ocultas*(num_entradas + 1)],
         (num_ocultas, (num_entradas + 1)))
-    theta2 = np.reshape(params_rn[num_ocultas*(num_entradas + 1):], 
+    theta2 = np.reshape(params_rn[num_ocultas*(num_entradas + 1):],
         (num_etiquetas, (num_ocultas + 1)))
 
     #--------------------PASO1---------------------------------------
-   
+
     a1, a2, a3 = propagation(X, theta1, theta2)
     m = np.shape(X)[0]
     delta_3 = a3 - y # (5000, 10)
@@ -108,7 +113,7 @@ def backdrop(params_rn, num_entradas, num_ocultas, num_etiquetas, X, y, reg):
     #delta_3 = a3 - y # (5000, 10)
     delta_matrix_1 = np.zeros(np.shape(theta1))
     delta_matrix_2 = np.zeros(np.shape(theta2))
-    
+
     aux1 = np.dot(delta_3, theta2) #(5000, 26)
     aux2 = Data_Management.add_column_left_of_matrix(derivada_de_G(np.dot(a1, np.transpose(theta1))))
     delta_2 = aux1 * aux2 #(5000, 26)
@@ -120,45 +125,45 @@ def backdrop(params_rn, num_entradas, num_ocultas, num_etiquetas, X, y, reg):
     delta_matrix_2 = delta_matrix_2 + np.transpose(np.dot(np.transpose(a2), delta_3)) #(10, 26)
     #--------------------PASO6---------------------------------------
     delta_matrix_1 = (1/m) * delta_matrix_1
-    delta_matrix_1[:, 1:] = delta_matrix_1[:, 1:] + (reg/m) * theta1[:, 1:] 
+    delta_matrix_1[:, 1:] = delta_matrix_1[:, 1:] + (reg/m) * theta1[:, 1:]
 
     delta_matrix_2 = (1/m) * delta_matrix_2
-    delta_matrix_2[:, 1:] = delta_matrix_2[:, 1:] + (reg/m) * theta2[:, 1:] 
-    
-    
+    delta_matrix_2[:, 1:] = delta_matrix_2[:, 1:] + (reg/m) * theta2[:, 1:]
+
+
     cost = J(X, y, a3, num_etiquetas, theta1, theta2)
     gradient = np.concatenate((np.ravel(delta_matrix_1), np.ravel(delta_matrix_2)))
-    
+
     return cost, gradient
 
-def checkLearned(y, outputLayer):     
+def checkLearned(y, outputLayer):
     maxIndexV = np.argmax(outputLayer, axis = 1)
     checker = (y[:] == maxIndexV)
 
     truePositives = 0
     falsePositives = 0
     falseNegatives = 0
-    
+
     for i in range(np.size(checker)):
         if checker[i] == True and y[i] == 1:
             truePositives += 1
         elif checker[i] == True and y[i] == 0:
             falsePositives += 1
         elif checker[i] == False and y[i] == 1:
-            falseNegatives += 1    
-    
+            falseNegatives += 1
+
     if truePositives == 0:
         return 0
-        
-    recall = (truePositives/(truePositives + falseNegatives)) 
+
+    recall = (truePositives/(truePositives + falseNegatives))
     precision = (truePositives/(truePositives + falsePositives))
     score = 2 *(precision*recall/(precision + recall))
-    
+
     # PORCENTAJE DE ACIERTOS TOTALES
-    #count = np.size(np.where(checker[:, 0] == çy[:, 0])) 
+    #count = np.size(np.where(checker[:, 0] == çy[:, 0]))
     #fin = count/np.shape(y)[0] * 100
-    
-    return score 
+
+    return score
 
 def pintaTodo(X, y, error, errorTr, true_score):
     plt.figure()
@@ -166,31 +171,56 @@ def pintaTodo(X, y, error, errorTr, true_score):
     plt.plot(np.linspace(0,len(error)-1, len(error), dtype = int), error[:], color="grey")
     plt.plot(np.linspace(0,len(errorTr)-1, len(errorTr), dtype = int), errorTr[:], color="green")
     plt.suptitle(("Score: " + str(true_score)))
-    
+
     plt.show()
-    
-def paint_graphic(X, y, true_score, theta1, theta2):     
+
+def paint_pkmTypes(X, y, types = None):
+    '''
+    Creates plt figure and draws the pkms used as input by the first two values of X
+    and changes the color of them depending on the type
+
+    X = attributes
+    y = list of types, deTransformed (from 0 to 17)
+    types = types that are going to be printed
+    '''
+    typesIndx = []
+
+    if(types == None):
+        types = Data_Management.types_
+        # esto es para que meta los indices del 0 al 17, de los tipos completos, como no lo conseguia, he pasado
+        typesIndx = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17]
+    else:
+        for t in range(len(types)):
+            typesIndx.append(Data_Management.types_.index(types[t]))
+
+
+    colors = Data_Management.colors_
+
+    for i in range(len(typesIndx)):
+        pos = (y == typesIndx[i]).ravel()
+        plt.scatter(X[pos, 0], X[pos, 1], color=colors[typesIndx[i]], marker='.', label = types[i])
+
+
+def paint_graphic(X, y, true_score, theta1, theta2, types = None):
     plt.figure()
-    
-    pos = (y == 1).ravel()
-    neg = (y == 0).ravel()
-    plt.scatter(X[pos, 0], X[pos, 1], color='blue', marker='o', label = "Legendary")
-    plt.scatter(X[neg, 0], X[neg, 1], color='black', marker='x', label = "Non legendary")   
-    
+
+    paint_pkmTypes(X, y, types)
+
     x0_min, x0_max = X[:,0].min(), X[:,0].max()
     x1_min, x1_max = X[:,1].min(), X[:,1].max()
     xx1, xx2 = np.meshgrid(np.linspace(x0_min, x0_max), np.linspace(x1_min, x1_max))
-    
+
     sigm = forward_propagate(np.c_[ xx1.ravel(), xx2.ravel()], theta1, theta2)[4]
+    sigm = np.argmax(sigm, axis = 1) #coge el valor maximo sacado por el frw_Propagate
     sigm = np.reshape(sigm, np.shape(xx1))
     plt.contour(xx1, xx2, sigm, [0.5], linewidths = 1, colors = 'g')
-    
+
     plt.suptitle(("Score: " + str(true_score)))
-    
+
     plt.show()
-        
-        
-X, y = Data_Management.load_csv_types_features("pokemon.csv", ["defense", "attack"])
+
+
+X, y = Data_Management.load_csv_types_features("pokemon.csv", ["attack", "defense"])
 
 
 
@@ -229,14 +259,14 @@ for j in range(NUM_TRIES):
         method='TNC', jac=True,
         options={'maxiter': 70}).x
 
-        theta1 = np.reshape(thetas[:num_ocultas*(num_entradas + 1)], 
+        theta1 = np.reshape(thetas[:num_ocultas*(num_entradas + 1)],
                 (num_ocultas, (num_entradas + 1)))
-        theta2 = np.reshape(thetas[num_ocultas*(num_entradas + 1):], 
+        theta2 = np.reshape(thetas[num_ocultas*(num_entradas + 1):],
                 (num_etiquetas, (num_ocultas + 1)))
-        
+
         auxErr.append(J(validationX, validationY, forward_propagate(validationX, theta1, theta2)[4], num_etiquetas, theta1, theta2))
         auxErrTr.append(J(trainX[:i], trainY[:i], forward_propagate(trainX[:i], theta1, theta2)[4], num_etiquetas, theta1, theta2))
-        
+
         if errorMin > auxErr[-1]:
             errorMin = auxErr[-1]
             thetaMin1 = theta1
@@ -250,7 +280,8 @@ for j in range(NUM_TRIES):
         thetaTrueMin2 = thetaMin2
         pintaTodo(testingX, testingY, auxErr, auxErrTr, true_score)
 
-paint_graphic(testingX, testingY, true_score_max, thetaTrueMin1, thetaTrueMin2)
+deTransTestY = des_transform_y(testingY, num_etiquetas);
+paint_graphic(testingX, deTransTestY, true_score_max, thetaTrueMin1, thetaTrueMin2, ['fire']);
 
 print("True Score de la red neuronal: " + str(true_score_max) + "\n")
 while True:
@@ -262,4 +293,3 @@ while True:
     user_values = Normalization.normalize(user_values, mu, sigma) #normalization of user values
     sol = forward_propagate(user_values, thetaTrueMin1, thetaTrueMin2)[4]
     print("Is your pokemon legendary?: " + str(sol[0, 0] > 0.7) + "\n")
-

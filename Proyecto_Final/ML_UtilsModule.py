@@ -6,8 +6,11 @@ from matplotlib import pyplot as plt
                
 
 class Data_Management:
-    types_ = []
-
+    types_ = ["grass", "water", "fire", "bug", "normal", "poison", "electric", 'flying', 'dark', 
+                 'dragon','ground', 'fairy', 'fighting', 'ghost', 'ice', 'steel', 'rock', 'psychic']
+    colors_= ['#00d149', '#3250fa', '#d11515', '#77b81c', '#a1754a', '#ac00eb', '#fcee23', '#89f0e4', '#000000', 
+                 '#7a50de','#cfc25f', '#fda3ff', '#ad680e', '#8d5bde', '#bcd4d1', '#8f8f8f', '#cca589', '#f75ccb']
+    
     @staticmethod
     def getTypeByIndex(index):
         return Data_Management.types_[index]
@@ -47,7 +50,9 @@ class Data_Management:
         
         Data_Management.types_ = ["grass", "water", "fire", "bug", "normal", "poison", "electric", 'flying', 'dark', 
                  'dragon','ground', 'fairy', 'fighting', 'ghost', 'ice', 'steel', 'rock', 'psychic']
-        
+        Data_Management.colors_ = ['#00d149', '#3250fa', '#d11515', '#77b81c', '#a1754a', '#ac00eb', '#fcee23', '#89f0e4', '#000000', 
+                 '#7a50de','#cfc25f', '#fda3ff', '#ad680e', '#8d5bde', '#bcd4d1', '#8f8f8f', '#cca589', '#f75ccb']
+                 
         dataFile = dataFile.fillna(0)
         y = dataFile['type1'].array
     
