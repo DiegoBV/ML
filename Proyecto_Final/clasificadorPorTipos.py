@@ -211,27 +211,63 @@ def paint_graphic(X, y, true_score, theta1, theta2, types = None):
     xx1, xx2 = np.meshgrid(np.linspace(x0_min, x0_max), np.linspace(x1_min, x1_max))
 
     aux = np.c_[ xx1.ravel(), xx2.ravel()]
-    #p, aux = polinomial_features(aux, 5)
-    aux = Normalization.normalize(aux, mu, sigma)
-    sigm = forward_propagate(aux, theta1, theta2)[4]
-    sigm = sigm[:, 1] #coge el valor maximo sacado por el frw_Propagate
-    # for i in range(18):
+    
+    sigm = forward_propagate( aux, theta1, theta2)[4]
+    sigm = np.argmax(sigm, axis = 1) #coge el valor maximo sacado por el frw_Propagate
     sigm = np.reshape(sigm, np.shape(xx1))
-    plt.contour(xx1, xx2, sigm, [0.5], linewidths = 1, colors ='g')
+    plt.contour(xx1, xx2, sigm, linewidths = 0.25, colors = 'b') 
 
+
+    plt.xlabel("weight_kg")
+    plt.ylabel("speed")
     plt.suptitle(("Score: " + str(true_score)))
+
     plt.show()
 
 
+def paint_graphic_norm(X, y, true_score, theta1, theta2, mu, sigma):     
+    figure, ax = plt.subplots()
+    
+    paint_pkmTypes(X, y)
+    
+    x0_min, x0_max = X[:,0].min(), X[:,0].max()
+    x1_min, x1_max = X[:,1].min(), X[:,1].max()
+    xx1, xx2 = np.meshgrid(np.linspace(x0_min, x0_max), np.linspace(x1_min, x1_max))
+    
+    aux = np.c_[ xx1.ravel(), xx2.ravel()]
+    #p, aux = polinomial_features(aux, 2)
+    #aux = Normalization.normalize(aux[:, 1:], mu, sigma)
+    sigm = forward_propagate(aux, theta1, theta2)[4]
+    sigm = np.reshape(sigm, np.shape(xx1))
+    plt.contour(xx1, xx2, sigm, [0.5], linewidths = 1, colors=['red', 'purple'])
 
-X, y = Data_Management.load_csv_types_features("pokemon.csv", ["percentage_male", "sp_attack"])
+    #formatting the graphic with some labels
+    plt.xlabel("weight_kg")
+    plt.ylabel("speed")
+    plt.suptitle(("Score: " + str(float("{0:.3f}".format(true_score)))))
+    figure.legend()
+
+    #set the labels to non-normalized values
+    figure.canvas.draw()
+    labels = [item for item in plt.xticks()[0]]
+    for i in range(len(labels)):
+        labels[i] = int(round((labels[i] * sigma[0, 0]) + mu[0, 0], -1))
+    ax.xaxis.set_ticklabels(labels)
+
+    labels = [item for item in plt.yticks()[0]]
+    for i in range(len(labels)):
+        labels[i] = int(round((labels[i] * sigma[0, 1]) + mu[0, 1], -1))
+    ax.yaxis.set_ticklabels(labels)
+    
+    plt.show()
 
 
-#p, X = polinomial_features(X, 5)
-X, mu, sigma = Normalization.normalize_data_matrix(X)
+X, y = Data_Management.load_csv_types_features("pokemon.csv", ["attack", "defense"])
+
+
 
 #normalize
-#X, mu, sigma = Normalization.normalize_data_matrix(X)
+X, mu, sigma = Normalization.normalize_data_matrix(X)
 
 
 
@@ -286,11 +322,10 @@ for j in range(NUM_TRIES):
         thetaTrueMin2 = thetaMin2
         pintaTodo(testingX, testingY, auxErr, auxErrTr, true_score)
 
-deTransTestY = des_transform_y(testingY, num_etiquetas)
-paint_graphic(testingX, deTransTestY, true_score_max, thetaTrueMin1, thetaTrueMin2, Data_Management.types_)
-paint_graphic(testingX, deTransTestY, true_score_max, thetaTrueMin1, thetaTrueMin2, ['grass'])
-paint_graphic(testingX, deTransTestY, true_score_max, thetaTrueMin1, thetaTrueMin2, ['water'])
-paint_graphic(testingX, deTransTestY, true_score_max, thetaTrueMin1, thetaTrueMin2, ['ghost'])
+deTransTestY = des_transform_y(testingY, num_etiquetas);
+paint_graphic(testingX, deTransTestY, true_score_max, thetaTrueMin1, thetaTrueMin2);
+paint_graphic_norm(testingX, deTransTestY, true_score_max, thetaTrueMin1, thetaTrueMin2, mu, sigma)
+
 
 print("True Score de la red neuronal: " + str(true_score_max) + "\n")
 while True:
