@@ -7,7 +7,7 @@ import numpy as np
 import sys
 
 learning_rate = 1.0
-POLY = 2
+NUM_TRIES = 10
 
 def polinomial_features(X, grado):
     poly = pf(grado)
@@ -56,9 +56,10 @@ def swapColumns(X):
 
 def draw_data(X, Y):
     pos = np.where(Y == 0)[0] #vector with index of the Y = 1
-    plt.scatter(X[pos, 0], X[pos, 1], marker='.', c='r')
+    plt.scatter(X[pos, 0], X[pos, 1], marker='.', c='r', label = "Non Legendary")
     pos = np.where(Y == 1)[0].ravel() #vector with index of the Y = 1
-    plt.scatter(X[pos, 0], X[pos, 1], marker='.', c='y')
+    plt.scatter(X[pos, 0], X[pos, 1], marker='.', c='y', label = "Legendary")
+
 
 def draw_decision_boundary(theta, X, Y, poly):
     x0_min, x0_max = X[:,0].min(), X[:,0].max()
@@ -70,10 +71,34 @@ def draw_decision_boundary(theta, X, Y, poly):
 
     plt.contour(xx1, xx2, sigm, [0.5], linewidths = 1, colors = 'g')
 
-def draw(theta, X, Y, poly):
-    plt.figure()
+def format_graphic (figure, ax, graphic_attr_names, score, polyDegree, sigma, mu):
+    
+    #formatting the graphic with some labels
+    plt.xlabel(graphic_attr_names[0])
+    plt.ylabel(graphic_attr_names[1])
+    plt.suptitle(("Aciertos: " + str(float("{0:.3f}".format(score))) + ", poly: " + str(polyDegree)))
+    figure.legend()
+    
+    #set the labels to non-normalized values
+    figure.canvas.draw()
+    labels = [item for item in plt.xticks()[0]]
+    for i in range(len(labels)):
+        labels[i] = int(round((labels[i] * sigma[0, 0]) + mu[0, 0], -1))
+    ax.xaxis.set_ticklabels(labels)
+
+    labels = [item for item in plt.yticks()[0]]
+    for i in range(len(labels)):
+        labels[i] = int(round((labels[i] * sigma[0, 1]) + mu[0, 1], -1))
+    ax.yaxis.set_ticklabels(labels)
+    
+def draw(theta, X, Y, poly, graphic_attr_names, score, polyDegree, sigma, mu):
+    figure, ax = plt.subplots()
+    
     draw_data(X, Y)
     draw_decision_boundary(theta, X, Y, poly)
+    
+    format_graphic(figure, ax, graphic_attr_names, score, polyDegree, sigma, mu)
+    
     plt.show()
 
 def training_examples_test_with_theta(X, Y, theta):
@@ -83,26 +108,55 @@ def training_examples_test_with_theta(X, Y, theta):
     mask = (Y == test)
     return (len(Y[mask])/len(Y)) * 100 
 
-X, y = Data_Management.load_csv_svm("pokemon.csv", ["capture_rate", "base_egg_steps"])
+
+graphic_attr_names = ["capture_rate", "percentage_male"]
+X, y = Data_Management.load_csv_svm("pokemon.csv", graphic_attr_names)
+X, mu, sigma = Normalization.normalize_data_matrix(X)
 
 X, y, trainX, trainY, validationX, validationY, testingX, testingY = Data_Management.divide_legendary_groups(X, y)
 
-trainXinv = swapColumns(trainX)
+#------------------------------------------------------------------------------------------------- 
+
+allMaxPercent = []
+allMaxElev = []
+allMaxPoly = []
+allMaxThetas = []
+
+Xused = X
+Yused = y
+
+for t in range(NUM_TRIES):
+    i = 1
+    polyMaxPercent = 0
+    maxPercent = 0
+    currentPercent = 0
+
+    poly, X_poly = polinomial_features(Xused, i)
+    theta = np.zeros([1, np.shape(X_poly)[1]], dtype=float)
+    
+    theta = tnc(func=J, x0=theta, fprime=gradient, args=(X_poly, Yused))[0]
+    
+    currentPercent = training_examples_test_with_theta(X_poly, Yused, theta)
+
+    while currentPercent > maxPercent:
+        maxPercent =  currentPercent
+        polyMaxPercent = i
+        i = i + 1
+        
+        poly, X_poly = polinomial_features(Xused, i)
+        theta = np.zeros([1, np.shape(X_poly)[1]], dtype=float)
+        
+        theta = tnc(func=J, x0=theta, fprime=gradient, args=(X_poly, Yused))[0]
+        
+        currentPercent = training_examples_test_with_theta(X_poly, Yused, theta)
+        
+    allMaxPercent.append(maxPercent)
+    allMaxElev.append(polyMaxPercent)
+    allMaxPoly.append(poly)
+    allMaxThetas.append(theta)
+    
+indx = allMaxPercent.index(max(allMaxPercent))
+
+draw(allMaxThetas[indx], Xused, Yused, allMaxPoly[indx], graphic_attr_names, max(allMaxPercent), allMaxElev[indx],sigma, mu)
 
 #------------------------------------------------------------------------------------------------- 
-poly, X_poly = polinomial_features(trainX, POLY)
-theta = np.zeros([1, np.shape(X_poly)[1]], dtype=float)
-
-theta = tnc(func=J, x0=theta, fprime=gradient, args=(X_poly, trainY))[0]
-
-draw(theta, trainX, trainY, poly)
-print("Porcentaje de aciertos: " + str(training_examples_test_with_theta(X_poly, trainY, theta)) + "%")
-#------------------------------------------------------------------------------------------------- 
-#------------------------------------------------------------------------------------------------- 
-polyInv, X_poly_inv = polinomial_features(trainXinv, POLY)
-thetaInv = np.zeros([1, np.shape(X_poly_inv)[1]], dtype=float)
-
-thetaInv = tnc(func=J, x0=thetaInv, fprime=gradient, args=(X_poly_inv, trainY))[0]
-
-draw(thetaInv, trainXinv, trainY, polyInv)
-print("Porcentaje de aciertos: " + str(training_examples_test_with_theta(X_poly_inv, trainY, thetaInv)) + "%")
