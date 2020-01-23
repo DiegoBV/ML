@@ -44,15 +44,6 @@ def g(z):
     """
     return 1/(1 + np.exp(-z))
 
-def swapColumns(X):
-    Xinv = np.array(np.transpose(X))
-
-    auxTr = np.array(Xinv[0])
-    Xinv[0] = Xinv[1]
-    Xinv[1] = auxTr
-    Xinv = np.transpose(Xinv)
-    
-    return Xinv
 
 def draw_data(X, Y):
     pos = np.where(Y == 0)[0] #vector with index of the Y = 1
@@ -76,7 +67,7 @@ def format_graphic (figure, ax, graphic_attr_names, score, polyDegree, sigma, mu
     #formatting the graphic with some labels
     plt.xlabel(graphic_attr_names[0])
     plt.ylabel(graphic_attr_names[1])
-    plt.suptitle(("Aciertos: " + str(float("{0:.3f}".format(score))) + ", poly: " + str(polyDegree)))
+    plt.suptitle(("Score: " + str(float("{0:.3f}".format(score))) + ", poly: " + str(polyDegree)))
     figure.legend()
     
     #set the labels to non-normalized values
@@ -101,15 +92,32 @@ def draw(theta, X, Y, poly, graphic_attr_names, score, polyDegree, sigma, mu):
     
     plt.show()
 
-def training_examples_test_with_theta(X, Y, theta):
-    test = g(np.dot(X, np.transpose(theta)))
-    test = np.around(test)
-    test = np.reshape(test, (np.shape(test)[0], 1))
-    mask = (Y == test)
-    return (len(Y[mask])/len(Y)) * 100 
+def checkLearned(X, Y, theta):     
+    checker = g(np.dot(X, np.transpose(theta)))
+    checker = np.around(checker)
+    checker = np.reshape(checker, (np.shape(checker)[0], 1))
+    truePositives = 0
+    falsePositives = 0
+    falseNegatives = 0
+    
+    for i in range(np.size(checker)):
+        if checker[i] == 1 and y[i] == 1:
+            truePositives += 1
+        elif checker[i] == 1 and y[i] == 0:
+            falsePositives += 1
+        elif checker[i] == 0 and y[i] == 1:
+            falseNegatives += 1    
+    
+    if truePositives == 0:
+        return 0
+        
+    recall = (truePositives/(truePositives + falseNegatives)) 
+    precision = (truePositives/(truePositives + falsePositives))
+    score = 2 *(precision*recall/(precision + recall))
 
+    return score
 
-graphic_attr_names = ["capture_rate", "percentage_male"]
+graphic_attr_names = ["capture_rate", "base_egg_steps"]
 X, y = Data_Management.load_csv_svm("pokemon.csv", graphic_attr_names)
 X, mu, sigma = Normalization.normalize_data_matrix(X)
 
@@ -122,8 +130,8 @@ allMaxElev = []
 allMaxPoly = []
 allMaxThetas = []
 
-Xused = X
-Yused = y
+Xused = trainX
+Yused = trainY
 
 for t in range(NUM_TRIES):
     i = 1
@@ -136,7 +144,7 @@ for t in range(NUM_TRIES):
     
     theta = tnc(func=J, x0=theta, fprime=gradient, args=(X_poly, Yused))[0]
     
-    currentPercent = training_examples_test_with_theta(X_poly, Yused, theta)
+    currentPercent = checkLearned(X_poly, Yused, theta)
 
     while currentPercent > maxPercent:
         maxPercent =  currentPercent
@@ -148,7 +156,7 @@ for t in range(NUM_TRIES):
         
         theta = tnc(func=J, x0=theta, fprime=gradient, args=(X_poly, Yused))[0]
         
-        currentPercent = training_examples_test_with_theta(X_poly, Yused, theta)
+        currentPercent = checkLearned(X_poly, Yused, theta)
         
     allMaxPercent.append(maxPercent)
     allMaxElev.append(polyMaxPercent)
