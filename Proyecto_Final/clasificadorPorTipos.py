@@ -224,11 +224,36 @@ def paint_graphic(X, y, true_score, theta1, theta2, types = None):
 
     plt.show()
 
-
-def paint_graphic_norm(X, y, true_score, theta1, theta2, mu, sigma):     
+def paint_graphic_norm_full(sigm, xx1, xx2):
+    """
+    Pinta las funciones de todos los tipos del color de cada tipo
+    """
+    for i in range(0,18):
+        contorn = sigm[:, i]
+        contorn = np.reshape(contorn, np.shape(xx1))
+        plt.contour(xx1, xx2, contorn, linewidths = 0.5, colors=Data_Management.colors_[i])
+        
+def paint_graphic_norm_partial(sigm, xx1, xx2, types = None):
+    """
+    Pinta las funciones de los tipos elegidos del color de cada tipo
+    """
+    typesIndx = []
+    for t in range(len(types)):
+        typesIndx.append(Data_Management.types_.index(types[t]))
+        
+    for i in range(len(typesIndx)):
+        contorn = sigm[:, typesIndx[i]]
+        contorn = np.reshape(contorn, np.shape(xx1))
+        plt.contour(xx1, xx2, contorn, linewidths = 0.5, colors=Data_Management.colors_[typesIndx[i]])
+    
+    
+def paint_graphic_norm(X, y, true_score, theta1, theta2, mu, sigma, graphic_attr_names, types = None, show_allTypes = False):     
     figure, ax = plt.subplots()
     
-    paint_pkmTypes(X, y)
+    if show_allTypes:
+        paint_pkmTypes(X, y)
+    else:
+        paint_pkmTypes(X, y, types)
     
     x0_min, x0_max = X[:,0].min(), X[:,0].max()
     x1_min, x1_max = X[:,1].min(), X[:,1].max()
@@ -238,12 +263,15 @@ def paint_graphic_norm(X, y, true_score, theta1, theta2, mu, sigma):
     #p, aux = polinomial_features(aux, 2)
     #aux = Normalization.normalize(aux[:, 1:], mu, sigma)
     sigm = forward_propagate(aux, theta1, theta2)[4]
-    sigm = np.reshape(sigm, np.shape(xx1))
-    plt.contour(xx1, xx2, sigm, [0.5], linewidths = 1, colors=['red', 'purple'])
+    
+    if types == None:
+        paint_graphic_norm_full(sigm, xx1, xx2)
+    else:
+        paint_graphic_norm_partial(sigm, xx1, xx2, types)
 
     #formatting the graphic with some labels
-    plt.xlabel("weight_kg")
-    plt.ylabel("speed")
+    plt.xlabel(graphic_attr_names[0])
+    plt.ylabel(graphic_attr_names[1])
     plt.suptitle(("Score: " + str(float("{0:.3f}".format(true_score)))))
     figure.legend()
 
@@ -262,7 +290,9 @@ def paint_graphic_norm(X, y, true_score, theta1, theta2, mu, sigma):
     plt.show()
 
 
-X, y = Data_Management.load_csv_types_features("pokemon.csv", ["attack", "defense"])
+attr_names = ["capture_rate", "base_egg_steps"]
+types_to_paint =["fire"]
+X, y = Data_Management.load_csv_types_features("pokemon.csv", attr_names)
 
 
 
@@ -323,9 +353,20 @@ for j in range(NUM_TRIES):
         pintaTodo(testingX, testingY, auxErr, auxErrTr, true_score)
 
 deTransTestY = des_transform_y(testingY, num_etiquetas);
-paint_graphic(testingX, deTransTestY, true_score_max, thetaTrueMin1, thetaTrueMin2);
-paint_graphic_norm(testingX, deTransTestY, true_score_max, thetaTrueMin1, thetaTrueMin2, mu, sigma)
+# Pintado ---------------------------------------------------------------------------------------------------------------------------
+paint_graphic_norm(testingX, deTransTestY, true_score_max, thetaTrueMin1, thetaTrueMin2, mu, sigma, attr_names, ["bug", "normal", 'flying', 'ghost'], True)
+paint_graphic_norm(testingX, deTransTestY, true_score_max, thetaTrueMin1, thetaTrueMin2, mu, sigma, attr_names, ["bug", "normal", 'flying', 'ghost'])
 
+paint_graphic_norm(testingX, deTransTestY, true_score_max, thetaTrueMin1, thetaTrueMin2, mu, sigma, attr_names, ["bug"])
+paint_graphic_norm(testingX, deTransTestY, true_score_max, thetaTrueMin1, thetaTrueMin2, mu, sigma, attr_names, ["normal"])
+paint_graphic_norm(testingX, deTransTestY, true_score_max, thetaTrueMin1, thetaTrueMin2, mu, sigma, attr_names, ["flying"])
+paint_graphic_norm(testingX, deTransTestY, true_score_max, thetaTrueMin1, thetaTrueMin2, mu, sigma, attr_names, ["ghost"])
+
+paint_graphic_norm(testingX, deTransTestY, true_score_max, thetaTrueMin1, thetaTrueMin2, mu, sigma, attr_names, ["bug"], True)
+paint_graphic_norm(testingX, deTransTestY, true_score_max, thetaTrueMin1, thetaTrueMin2, mu, sigma, attr_names, ["normal"], True)
+paint_graphic_norm(testingX, deTransTestY, true_score_max, thetaTrueMin1, thetaTrueMin2, mu, sigma, attr_names, ["flying"], True)
+paint_graphic_norm(testingX, deTransTestY, true_score_max, thetaTrueMin1, thetaTrueMin2, mu, sigma, attr_names, ["ghost"], True)
+# -----------------------------------------------------------------------------------------------------------------------------------
 
 print("True Score de la red neuronal: " + str(true_score_max) + "\n")
 while True:
