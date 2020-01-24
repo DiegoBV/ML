@@ -7,7 +7,7 @@ from ML_UtilsModule import Normalization
 
 
 lambda_ = 1
-NUM_TRIES = 3
+NUM_TRIES = 1
 
 def g(z):
     """
@@ -184,6 +184,7 @@ def paint_graphic(X, y, true_score, theta1, theta2, mu, sigma):
         
         
 X, y = Data_Management.load_csv_svm("pokemon.csv", ["base_egg_steps", "base_happiness"])
+nX, ny, ntrainX, ntrainY, nvalidationX, nvalidationY, ntestingX, ntestingY = Data_Management.divide_legendary_groups(X, y)
 
 #normalize
 p, X = polinomial_features(X, 5)

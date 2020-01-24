@@ -7,7 +7,7 @@ from ML_UtilsModule import Normalization
 
 
 lambda_ = 1
-NUM_TRIES = 1
+NUM_TRIES = 5
 
 def g(z):
     """
@@ -301,7 +301,7 @@ def paint_graphic_norm(X, y, true_score, theta1, theta2, mu, sigma, graphic_attr
     plt.show()
 
 
-attr_names = ["capture_rate", "base_egg_steps"]
+attr_names = ["percentage_male", "sp_attack"]
 types_to_paint =["fire"]
 X, y = Data_Management.load_csv_types_features("pokemon.csv", attr_names)
 
