@@ -130,15 +130,17 @@ allMaxElev = []
 allMaxPoly = []
 allMaxThetas = []
 
-Xused = trainX
-Yused = trainY
+Xused = validationX
+Yused = validationY
 
 for t in range(NUM_TRIES):
     i = 1
     polyMaxPercent = 0
     maxPercent = 0
     currentPercent = 0
-
+    maxTh = None
+    maxPoly = None
+    
     poly, X_poly = polinomial_features(Xused, i)
     theta = np.zeros([1, np.shape(X_poly)[1]], dtype=float)
     
@@ -146,9 +148,15 @@ for t in range(NUM_TRIES):
     
     currentPercent = checkLearned(X_poly, Yused, theta)
 
+    maxTh = theta
+    maxPoly = poly
+    
     while currentPercent > maxPercent:
         maxPercent =  currentPercent
         polyMaxPercent = i
+        maxTh = theta
+        maxPoly = poly
+        
         i = i + 1
         
         poly, X_poly = polinomial_features(Xused, i)
@@ -160,8 +168,8 @@ for t in range(NUM_TRIES):
         
     allMaxPercent.append(maxPercent)
     allMaxElev.append(polyMaxPercent)
-    allMaxPoly.append(poly)
-    allMaxThetas.append(theta)
+    allMaxPoly.append(maxPoly)
+    allMaxThetas.append(maxTh)
     
 indx = allMaxPercent.index(max(allMaxPercent))
 
