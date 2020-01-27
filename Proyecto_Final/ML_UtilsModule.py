@@ -8,8 +8,10 @@ from matplotlib import pyplot as plt
 class Data_Management:
     types_ = ["grass", "water", "fire", "bug", "normal", "poison", "electric", 'flying', 'dark', 
                  'dragon','ground', 'fairy', 'fighting', 'ghost', 'ice', 'steel', 'rock', 'psychic']
-    colors_= ['#00d149', '#3250fa', '#d11515', '#77b81c', '#a1754a', '#ac00eb', '#fcee23', '#89f0e4', '#000000', 
-                 '#7a50de','#cfc25f', '#fda3ff', '#ad680e', '#8d5bde', '#bcd4d1', '#8f8f8f', '#cca589', '#f75ccb']
+    
+    colors_= ['#00d149', '#3250fa', '#d11515', '#77b81c', '#a1754a', '#ac00eb', '#fcee23', '#89f0e4', '#251f30', 
+                 '#7a50de','#cfc25f', '#fda3ff', '#ad680e', '#8d5bde', '#bcd4d1', '#8f8f8f', '#cca589', '#f75ccb', 
+                 '#000000']
     
     @staticmethod
     def getTypeByIndex(index):

@@ -58,7 +58,7 @@ def des_transform_y(y, num_etiquetas):
     deTransY = np.where(y == 1)
     return deTransY[1]
 
-def paint_pkmTypes(X, y, types = None):
+def paint_pkmTypes(X, y, types = None, paintAll = False):
     '''
     Creates plt figure and draws the pkms used as input by the first two values of X
     and changes the color of them depending on the type
@@ -68,7 +68,8 @@ def paint_pkmTypes(X, y, types = None):
     types = types that are going to be printed
     '''
     typesIndx = []
-
+    typesNotSelectedIndx = []
+    
     if(types == None):
         types = Data_Management.types_
         # esto es para que meta los indices del 0 al 17, de los tipos completos, como no lo conseguia, he pasado
@@ -80,12 +81,15 @@ def paint_pkmTypes(X, y, types = None):
 
     colors = Data_Management.colors_
 
+    if paintAll:
+        plt.scatter(X[:, 0], X[:, 1], color=colors[18], marker='.', label = 'other')
+                
     for i in range(len(typesIndx)):
         pos = (y == typesIndx[i]).ravel()
-        plt.scatter(X[pos, 0], X[pos, 1], color=colors[typesIndx[i]], marker='.', label = types[i])
+        plt.scatter(X[pos, 0], X[pos, 1], color=colors[7], marker='.', label = types[i])
 
 
-def draw_decision_boundary(theta, X, Y, poly):
+def draw_decision_boundary(theta, X, Y, poly, indx = 0):
     x0_min, x0_max = X[:,0].min(), X[:,0].max()
     x1_min, x1_max = X[:,1].min(), X[:,1].max()
     xx1, xx2 = np.meshgrid(np.linspace(x0_min, x0_max), np.linspace(x1_min, x1_max))
@@ -93,7 +97,7 @@ def draw_decision_boundary(theta, X, Y, poly):
     sigm = g(poly.fit_transform(np.c_[ xx1.ravel(), xx2.ravel()]).dot(theta))
     sigm = sigm.reshape(xx1.shape)
 
-    plt.contour(xx1, xx2, sigm, [0.5], linewidths = 1, colors = 'g')
+    plt.contour(xx1, xx2, sigm, [0.01], linewidths = 1, colors = Data_Management.colors_[indx])
 
 def format_graphic (figure, ax, graphic_attr_names, score, polyDegree, sigma, mu):
     
@@ -115,13 +119,17 @@ def format_graphic (figure, ax, graphic_attr_names, score, polyDegree, sigma, mu
         labels[i] = int(round((labels[i] * sigma[0, 1]) + mu[0, 1], -1))
     ax.yaxis.set_ticklabels(labels)
     
-def draw(theta, X, Y, poly, graphic_attr_names, score, polyDegree, sigma, mu):
+def draw(theta, X, Y, poly, graphic_attr_names, score, polyDegree, sigma, mu, types = None, paintAll = False):
     figure, ax = plt.subplots()
     
-    paint_pkmTypes(X, Y)
+    paint_pkmTypes(X, Y, types, paintAll)
     
-    for i in range(18):
-        draw_decision_boundary(theta[i], X, Y, poly)
+    if(types == None):
+        for i in range(18):
+            draw_decision_boundary(theta[i], X, Y, poly, i)
+    else:
+        for t in range(len(types)):
+            draw_decision_boundary(theta[Data_Management.types_.index(types[t])], X, Y, poly, Data_Management.types_.index(types[t]))
     
     format_graphic(figure, ax, graphic_attr_names, score, polyDegree, sigma, mu)
     
@@ -130,13 +138,13 @@ def draw(theta, X, Y, poly, graphic_attr_names, score, polyDegree, sigma, mu):
 def checkLearned(X, Y, theta):     
     checker = g(np.dot(X, np.transpose(theta)))
     maxIndexV = np.argmax(checker, axis = 1)
-    checker = (y[:] == maxIndexV)
+    checker = (Y[:] == maxIndexV)
 
     truePositives = 0
     falsePositives = 0
     falseNegatives = 0
 
-    for i in range(np.shape(y)[0]):
+    for i in range(np.shape(Y)[0]):
         for j in range(18):
             if maxIndexV[i] == j and y[i] == j:
                 truePositives += 1
@@ -157,7 +165,8 @@ def checkLearned(X, Y, theta):
 
     return score
 
-graphic_attr_names = ["capture_rate", "base_egg_steps"]
+graphic_attr_names = ["against_psychic", "against_flying"]
+types_rendered = ["dark"]
 num_tipos = 18
 X, y = Data_Management.load_csv_types_features("pokemon.csv", graphic_attr_names)
 X, mu, sigma = Normalization.normalize_data_matrix(X)
@@ -170,8 +179,8 @@ allMaxElev = []
 allMaxPoly = []
 allMaxThetas = []
 
-Xused = X
-Yused = y
+Xused = trainX
+Yused = trainY
 Yused = transform_y(Yused, num_tipos)
 
 for t in range(NUM_TRIES):
@@ -218,6 +227,6 @@ for t in range(NUM_TRIES):
     
 indx = allMaxPercent.index(max(allMaxPercent))
 Yused = des_transform_y(Yused, num_tipos)
-draw(allMaxThetas[indx], Xused, Yused, allMaxPoly[indx], graphic_attr_names, max(allMaxPercent), allMaxElev[indx],sigma, mu)
+draw(allMaxThetas[indx], Xused, Yused, allMaxPoly[indx], graphic_attr_names, max(allMaxPercent), allMaxElev[indx],sigma, mu, types_rendered, True)
 
 #------------------------------------------------------------------------------------------------- 
