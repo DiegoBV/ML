@@ -6,7 +6,7 @@ from sklearn.preprocessing import PolynomialFeatures as pf
 import numpy as np
 import sys
 
-learning_rate = 1.0
+learning_rate = 0.1
 NUM_TRIES = 10
 
 def polinomial_features(X, grado):
@@ -111,12 +111,12 @@ def format_graphic (figure, ax, graphic_attr_names, score, polyDegree, sigma, mu
     figure.canvas.draw()
     labels = [item for item in plt.xticks()[0]]
     for i in range(len(labels)):
-        labels[i] = int(round((labels[i] * sigma[0, 0]) + mu[0, 0], -1))
+        labels[i] = (round((labels[i] * sigma[0, 0]) + mu[0, 0], 1)) #int
     ax.xaxis.set_ticklabels(labels)
 
     labels = [item for item in plt.yticks()[0]]
     for i in range(len(labels)):
-        labels[i] = int(round((labels[i] * sigma[0, 1]) + mu[0, 1], -1))
+        labels[i] = (round((labels[i] * sigma[0, 1]) + mu[0, 1], 1)) #int
     ax.yaxis.set_ticklabels(labels)
     
 def draw(theta, X, Y, poly, graphic_attr_names, score, polyDegree, sigma, mu, types = None, paintAll = False):
@@ -165,7 +165,7 @@ def checkLearned(X, Y, theta):
 
     return score
 
-graphic_attr_names = ["against_psychic", "against_flying"]
+graphic_attr_names = ["hp", "capture_rate"]
 types_rendered = ["dark"]
 num_tipos = 18
 X, y = Data_Management.load_csv_types_features("pokemon.csv", graphic_attr_names)
@@ -179,8 +179,8 @@ allMaxElev = []
 allMaxPoly = []
 allMaxThetas = []
 
-Xused = trainX
-Yused = trainY
+Xused = X
+Yused = y
 Yused = transform_y(Yused, num_tipos)
 
 for t in range(NUM_TRIES):
