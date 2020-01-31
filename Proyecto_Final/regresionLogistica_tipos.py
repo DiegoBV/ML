@@ -86,7 +86,7 @@ def paint_pkmTypes(X, y, types = None, paintAll = False):
                 
     for i in range(len(typesIndx)):
         pos = (y == typesIndx[i]).ravel()
-        plt.scatter(X[pos, 0], X[pos, 1], color=colors[7], marker='.', label = types[i])
+        plt.scatter(X[pos, 0], X[pos, 1], color='#ff0303', marker='+', label = types[i])
 
 
 def draw_decision_boundary(theta, X, Y, poly, indx = 0):
@@ -97,13 +97,17 @@ def draw_decision_boundary(theta, X, Y, poly, indx = 0):
     sigm = g(poly.fit_transform(np.c_[ xx1.ravel(), xx2.ravel()]).dot(theta))
     sigm = sigm.reshape(xx1.shape)
 
-    plt.contour(xx1, xx2, sigm, [0.01], linewidths = 1, colors = Data_Management.colors_[indx])
+    plt.contour(xx1, xx2, sigm, [0.5], linewidths = 1, colors = Data_Management.colors_[indx])
 
 def format_graphic (figure, ax, graphic_attr_names, score, polyDegree, sigma, mu):
     
     #formatting the graphic with some labels
     plt.xlabel(graphic_attr_names[0])
     plt.ylabel(graphic_attr_names[1])
+    
+    if polyDegree == 0:
+        polyDegree = 1
+        
     plt.suptitle(("Score: " + str(float("{0:.3f}".format(score))) + ", poly: " + str(polyDegree)))
     figure.legend()
     
@@ -165,8 +169,39 @@ def checkLearned(X, Y, theta):
 
     return score
 
-graphic_attr_names = ["hp", "capture_rate"]
-types_rendered = ["dark"]
+def checkLearnedByType(X, Y, theta, indxTypeChecked):
+    checker = g(np.dot(X, np.transpose(theta)))
+    maxIndexV = np.argmax(checker, axis = 1)
+    checker = (Y[:] == maxIndexV)
+
+    truePositives = 0
+    falsePositives = 0
+    falseNegatives = 0
+    
+    
+    for i in range(np.shape(Y)[0]):
+            if maxIndexV[i] == indxTypeChecked and y[i] == indxTypeChecked:
+                truePositives += 1
+                break
+            elif maxIndexV[i] == indxTypeChecked and y[i] != indxTypeChecked:
+                falsePositives += 1
+                break
+            elif maxIndexV[i] != indxTypeChecked and y[i] == indxTypeChecked:
+                falseNegatives += 1
+                break
+
+    if truePositives == 0:
+        return 0
+
+    recall = (truePositives/(truePositives + falseNegatives))
+    precision = (truePositives/(truePositives + falsePositives))
+    score = 2 *(precision*recall/(precision + recall))
+
+    return score
+    
+
+graphic_attr_names = ["against_normal", "against_ice"]
+types_rendered = ["steel"]
 num_tipos = 18
 X, y = Data_Management.load_csv_types_features("pokemon.csv", graphic_attr_names)
 X, mu, sigma = Normalization.normalize_data_matrix(X)
@@ -199,7 +234,7 @@ for t in range(NUM_TRIES):
         theta[j] = tnc(func=J, x0=theta[j], fprime=gradient, args=(X_poly, yTipo))[0]
     
     currentPercent = checkLearned(X_poly, Yused, theta)
-
+    
     maxTh = theta
     maxPoly = poly
     
@@ -227,6 +262,8 @@ for t in range(NUM_TRIES):
     
 indx = allMaxPercent.index(max(allMaxPercent))
 Yused = des_transform_y(Yused, num_tipos)
-draw(allMaxThetas[indx], Xused, Yused, allMaxPoly[indx], graphic_attr_names, max(allMaxPercent), allMaxElev[indx],sigma, mu, types_rendered, True)
+
+for pkm in range(18):
+    draw(allMaxThetas[indx], Xused, Yused, allMaxPoly[indx], graphic_attr_names, max(allMaxPercent), allMaxElev[indx],sigma, mu, [Data_Management.types_[pkm]], True)
 
 #------------------------------------------------------------------------------------------------- 
